@@ -9,6 +9,8 @@ import java.util.List;
  * A class used to discover web pages.
  */
 public class Spider {
+    private final Jsoup jsoup;
+    private final URL base;
     private int indexed = 0;
     private int recurDepth = 0;
 
@@ -18,7 +20,8 @@ public class Spider {
      * @param base The base URL to crawl from
      */
     public Spider(Jsoup jsoup, URL base) {
-
+        this.jsoup = jsoup;
+        this.base = base;
     }
 
     /**
@@ -28,7 +31,7 @@ public class Spider {
      * @return The List of discovered URLs
      */
     public List<URL> discover(StopType type, int threshold) {
-        return List.of();
+        return discover(base, type, threshold);
     }
     private List<URL> discover(URL url, StopType type, int threshold) {
         return List.of();
