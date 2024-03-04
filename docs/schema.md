@@ -1,5 +1,5 @@
 # Database Schema
-## Document Table
+## Document Table (Document)
 | Field Name   | Data Type                | Is Primary Key |
 |--------------|--------------------------|----------------|
 | URL          | Varchar (String)         | True           |
@@ -7,7 +7,7 @@
 | LastModified | Integer (Unix Timestamp) | False          |
 | Size         | Integer                  | False          |
 
-## Document Link Table
+## Document Link Table (DocumentLink)
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
 | DocId      | Integer   | True           |

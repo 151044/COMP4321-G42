@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -26,6 +27,8 @@ import java.util.List;
  * variables. This prevents SQL injections and speeds up any future queries.
  *
  * See lab 1 for details, and further examples here.
+ *
+ * Note: you don't need to specify text length in SQLite.
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
@@ -38,6 +41,11 @@ public class DatabaseConnection implements AutoCloseable {
     public DatabaseConnection(Path path) throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
         conn.setAutoCommit(false);
+        Statement createTable = conn.createStatement();
+        createTable.execute("CREATE TABLE IF NOT EXISTS Document " +
+                "(URL varchar, DocId integer, LastModified integer, Size integer)");
+        createTable.execute("CREATE TABLE IF NOT EXISTS DocumentLink" +
+                "(DocId integer, ChildId integer)");
     }
 
     /**
