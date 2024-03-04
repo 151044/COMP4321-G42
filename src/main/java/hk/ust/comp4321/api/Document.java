@@ -12,26 +12,32 @@ import java.util.*;
 /**
  * A class representing a single document, indexed by its URL.
  *
- * <p> Note that the document is lazy - it does not actually load the words and their
- * associated frequencies unless {@link #retrieve(Jsoup)} or {@link #retrieve(DatabaseConnection)}
- * is called.
+ * <p> Note that the document is lazy - it does not actually load the words, their
+ * associated frequencies, or children links unless {@link #retrieve(Jsoup)} or
+ * {@link #retrieve(DatabaseConnection)} is called.
  */
 public final class Document {
     private final URL url;
     private final LocalDateTime lastModified;
-    private final long id;
-    private final Map<String, WordFrequency> frequencies = new HashMap<>();
+    private final int id;
+    private final int size;
+    private final Map<String, WordFrequency> bodyFrequencies = new HashMap<>();
+    private final Map<String, WordFrequency> titleFrequencies = new HashMap<>();
+    private final List<URL> children = new ArrayList<>();
     private boolean isLoaded = false;
 
     /**
+     * Creates a new Document with the specified URL.
      * @param url The URL of the document
      * @param lastModified The timestamp at which the document was last modified
      * @param id The document ID; must be unique
+     * @param size The number of words of the document
      */
-    public Document(URL url, LocalDateTime lastModified, long id) {
+    public Document(URL url, LocalDateTime lastModified, int id, int size) {
         this.url = url;
         this.lastModified = lastModified;
         this.id = id;
+        this.size = size;
     }
 
     /**
@@ -54,9 +60,23 @@ public final class Document {
 
     /**
      * Writes the updated list of words to the database.
+     *
+     * <p><strong>Do not</strong> write the links to the database here.
      * @param conn The database connection to use
      */
-    public void write(DatabaseConnection conn) {
+    public void writeWords(DatabaseConnection conn) {
+
+    }
+
+    /**
+     * Writes the child links scraped to the database as document IDs.
+     *
+     * <p>This can <strong>only</strong> be called after all the documents
+     * currently discovered have been written to the database. Otherwise,
+     * we cannot resolve the URLs into DocIds properly.
+     * @param conn The database connection to use
+     */
+    public void writeChildrenLinks(DatabaseConnection conn) {
 
     }
 
@@ -95,12 +115,40 @@ public final class Document {
     }
 
     /**
-     * Gets the current list of words and their associated frequencies.
+     * Gets the current list of words in the document body and their associated frequencies.
+     * If {@link #isLoaded()} returns false, this returns an empty map instead.
      * @return The list of words loaded, or an empty map if
      * the words have not been loaded into memory.
      */
-    public Map<String, WordFrequency> frequencies() {
-        return frequencies;
+    public Map<String, WordFrequency> bodyFrequencies() {
+        return bodyFrequencies;
+    }
+
+    /**
+     * Gets the current list of words in the document title and their associated frequencies.
+     * If {@link #isLoaded()} returns false, this returns an empty map instead.
+     * @return The list of words loaded, or an empty map if
+     * the words have not been loaded into memory.
+     */
+    public Map<String, WordFrequency> titleFrequencies() {
+        return titleFrequencies;
+    }
+
+    /**
+     * Gets the links discovered in this document.
+     * If {@link #isLoaded()} returns false, this returns an empty list instead.
+     * @return The list of discovered URLs, or an empty list if the document is not loaded
+     */
+    public List<URL> children() {
+        return children;
+    }
+
+    /**
+     * Gets the size of the document, which is the number of words in the body.
+     * @return The size of the document
+     */
+    public int size() {
+        return size;
     }
 
     @Override
@@ -122,5 +170,4 @@ public final class Document {
     public String toString() {
         return "Document[" + url + ", " + id + "]";
     }
-
 }

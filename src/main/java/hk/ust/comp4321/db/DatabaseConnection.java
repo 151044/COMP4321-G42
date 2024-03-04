@@ -7,12 +7,13 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Represents the connection to the underlying database.
  *
- * <p>Currently, the database is organized into two different types of tables -
- * the Document table and Word (title) tables.
+ * <p>Currently, the database is organized into three different types of tables -
+ * the Document table, the Document Link table and Word (title) tables.
  *
  * <p>Please see
  * <a href="https://github.com/151044/COMP4321-G42/tree/main/docs/schema.md">
@@ -42,7 +43,7 @@ public class DatabaseConnection implements AutoCloseable {
     /**
      * Retrieves a document by its ID.
      *
-     * <p>Note: The word frequencies of this document has not been loaded.
+     * <p>Note: The word frequencies and children of this document have not been loaded.
      *
      * @param docId The document ID to find a document for
      * @throws IllegalArgumentException If the document ID is invalid
@@ -61,10 +62,26 @@ public class DatabaseConnection implements AutoCloseable {
      *          exists, and create it if needed.</li>
      *     <li>Update the table with the word frequency.</li>
      * </ol>
-     * @param stem
-     * @param freq
+     * @param stem The stemmed word to insert
+     * @param freq The word frequency record to associate with this word
      */
     public void insertWord(String stem, WordFrequency freq) {
+
+    }
+
+    /**
+     * Inserts a word into the corresponding title table of the database.
+     *
+     * <p>The typical workflow is as follows:
+     * <ol>
+     *     <li>Check if the title table corresponding to the word
+     *          exists, and create it if needed.</li>
+     *     <li>Update the table with the word frequency.</li>
+     * </ol>
+     * @param stem The stemmed word to insert
+     * @param freq The word frequency record to associate with this word
+     */
+    public void insertTitleWord(String stem, WordFrequency freq) {
 
     }
 
@@ -74,9 +91,58 @@ public class DatabaseConnection implements AutoCloseable {
      *
      * <p>You do not need to create the document database since
      * it should be created on connection to the database.
-     * @param doc
+     *
+     * <p>This does not insert the document's words into the database.
+     * @param doc The document to insert into
      */
     public void insertDocument(Document doc) {
+
+    }
+
+    /**
+     * Finds the corresponding word frequencies of the stem.
+     * This <strong>does not</strong> retrieve the title frequency.
+     * @param stem The stem to find the word frequencies for
+     * @return The list of word frequencies associated with this stem
+     */
+    public List<WordFrequency> frequenciesOf(String stem) {
+       return List.of();
+    }
+
+    /**
+     * Finds the corresponding title word frequencies of the stem.
+     * This <strong>does not</strong> retrieve the word frequency in the document body.
+     * @param stem The stem to find the word frequencies for
+     * @return The list of word frequencies associated with this stem
+     */
+    public List<WordFrequency> frequenciesOfTitle(String stem) {
+        return List.of();
+    }
+
+    /**
+     * Inserts a link into the document link database.
+     * @param docId The parent document id
+     * @param child The child document id
+     */
+    public void insertLink(int docId, int child) {
+
+    }
+
+    /**
+     * Drops all the word frequency records associated with this document ID.
+     * @param docId The document ID to purge frequencies for
+     */
+    public void deleteFrequencies(int docId) {
+
+    }
+
+    /**
+     * Drops all the "forward links" associated with this document ID.
+     * This means that all records in the document link table with the
+     * specified DocId field should be dropped.
+     * @param docId The document ID to purge links for
+     */
+    public void deleteForwardLinks(int docId) {
 
     }
 
@@ -90,11 +156,19 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Gets the next document ID.
+     * @return The next unique document ID
+     */
+    public int nextDocId() {
+        return 0;
+    }
+
+    /**
      * Gets the internal connection to the database.
      *
      * <p>This is intended for debugging - if you're using this it
      * probably means the API is not rich enough for your purposes.
-     * Preferably, you should enhance this class instead.
+     * Preferably, you should enhance this class by adding a methods instead.
      * @return The Connection object
      */
     public Connection getConnection() {
