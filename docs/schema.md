@@ -7,9 +7,11 @@
 | LastModified | Integer (Unix Timestamp) | False          |
 
 ## Word Table
-Note: The name of each word is the table name.
+Note: The name of each (stemmed) word is the table name.
 
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
 | DocId      | Integer   | True           |
+| Paragraph  | Integer   | True           |
+| Sentence   | Integer   | True           |
 | Location   | Integer   | True           |
