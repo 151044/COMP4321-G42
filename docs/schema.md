@@ -9,6 +9,8 @@
 ## Word Table
 Note: The name of each (stemmed) word is the table name.
 
+Tables for stems in titles are named `{stem}_title`.
+
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
 | DocId      | Integer   | True           |
