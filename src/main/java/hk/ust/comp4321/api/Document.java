@@ -7,22 +7,20 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A class representing a single document, indexed by its URL.
- * <p>
- * Note that the document is lazy - it does not actually load the words unless
- * {@link #retrieve(Jsoup)} or {@link #retrieve(DatabaseConnection)} is called.
- * </p>
+ *
+ * <p> Note that the document is lazy - it does not actually load the words and their
+ * associated frequencies unless {@link #retrieve(Jsoup)} or {@link #retrieve(DatabaseConnection)}
+ * is called.
  */
 public final class Document {
     private final URL url;
     private final LocalDateTime lastModified;
     private final long id;
-    private final List<String> keywords = new ArrayList<>();
+    private final Map<String, WordFrequency> frequencies = new HashMap<>();
     private boolean isLoaded = false;
 
     /**
@@ -39,12 +37,10 @@ public final class Document {
     /**
      * Retrieves the list of words in this document from the database.
      * @param conn The database connection to use
-     * @return The list of words in this document
      * @throws SQLException If there is an SQL error
      */
-    public List<String> retrieve(DatabaseConnection conn) throws SQLException {
+    public void retrieve(DatabaseConnection conn) throws SQLException {
         isLoaded = true;
-        return null;
     }
 
     /**
@@ -53,9 +49,8 @@ public final class Document {
      * @return The list of words retrieved from the URL
      * @throws IOException If connecting or reading from the URL fails
      */
-    public List<String> retrieve(Jsoup soup) throws IOException {
+    public void retrieve(Jsoup soup) throws IOException {
         isLoaded = true;
-        return null;
     }
 
     /**
@@ -89,16 +84,24 @@ public final class Document {
     public long id() {
         return id;
     }
+
+    /**
+     * Checks if the list of words of this document are loaded. Since
+     * the document is lazy, only calls to {@link #retrieve(Jsoup)} or
+     * {@link #retrieve(DatabaseConnection)} will set this to true.
+     * @return True if the list of words are loaded, false otherwise
+     */
     public boolean isLoaded() {
         return isLoaded;
     }
 
     /**
-     * Gets the current list of loaded words.
-     * @return The list of words to load
+     * Gets the current list of words and their associated frequencies.
+     * @return The list of words loaded, or an empty map if
+     * the words have not been loaded into memory.
      */
-    public List<String> currentWords() {
-        return keywords;
+    public Map<String, WordFrequency> frequencies() {
+        return frequencies;
     }
 
     @Override
