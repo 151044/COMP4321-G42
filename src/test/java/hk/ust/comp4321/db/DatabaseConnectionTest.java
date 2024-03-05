@@ -1,11 +1,13 @@
 package hk.ust.comp4321.db;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 class DatabaseConnectionTest {
@@ -17,7 +19,13 @@ class DatabaseConnectionTest {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws SQLException {
+        conn.close();
+    }
+
+    @AfterAll
+    static void delete() throws IOException {
+        Files.deleteIfExists(Path.of("test.db"));
     }
 
     @Test
