@@ -28,13 +28,17 @@ import java.util.List;
  *
  * See lab 1 for details, and further examples here.
  *
- * Note: you don't need to specify text length in SQLite.
+ * Note: you don't need to specify text length in SQLite, so varchar without the brackets
+ * is fine.
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
 
     /**
      * Creates (if it does not exist) and connects to the database at the specified path.
+     *
+     * <p>Note that automatic commits have been disabled for performance reasons. Please
+     * remember to call {@link #commit()} for each batch of writes to the database.
      * @param path The path of the database to connect to
      * @throws SQLException If connecting or creating the database fails
      */
@@ -156,7 +160,7 @@ public class DatabaseConnection implements AutoCloseable {
 
     /**
      * Commits all changes to the database which have occurred before the last call
-     * to {@link #commit()}.
+     * to this method.
      * @throws SQLException If committing to the database throws an error
      */
     public void commit() throws SQLException {
@@ -165,6 +169,9 @@ public class DatabaseConnection implements AutoCloseable {
 
     /**
      * Gets the next document ID.
+     *
+     * <p>Possible implementations include counting the columns and reading the columns
+     * until you find the next available ID.
      * @return The next unique document ID
      */
     public int nextDocId() {
@@ -176,7 +183,8 @@ public class DatabaseConnection implements AutoCloseable {
      *
      * <p>This is intended for debugging - if you're using this it
      * probably means the API is not rich enough for your purposes.
-     * Preferably, you should enhance this class by adding a methods instead.
+     * Preferably, you should enhance this class by adding more methods
+     * in this class instead.
      * @return The Connection object
      */
     public Connection getConnection() {
