@@ -61,7 +61,7 @@ public class DatabaseConnection implements AutoCloseable {
      * @throws IllegalArgumentException If the document ID is invalid
      * @return The document associated with this ID.
      */
-    public Document fromId(int docId) {
+    public Document getDocFromId(int docId) {
         return null;
     }
 
