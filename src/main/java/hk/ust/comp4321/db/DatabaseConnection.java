@@ -4,11 +4,9 @@ import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.api.WordFrequency;
 
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Represents the connection to the underlying database.
@@ -29,10 +27,11 @@ import java.util.List;
  * See lab 1 for details, and further examples here.
  *
  * Note: you don't need to specify text length in SQLite, so varchar without the brackets
- * is fine.
+ * is fine. Also, ResultSet and PreparedStatements are 1-based. :(
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
+    private static AtomicInteger nextId = null;
 
     /**
      * Creates (if it does not exist) and connects to the database at the specified path.
@@ -50,6 +49,11 @@ public class DatabaseConnection implements AutoCloseable {
                 "(URL varchar, DocId integer, LastModified integer, Size integer)");
         createTable.execute("CREATE TABLE IF NOT EXISTS DocumentLink" +
                 "(DocId integer, ChildId integer)");
+        if (nextId == null) {
+            Statement queryId = conn.createStatement();
+            ResultSet idSet = queryId.executeQuery("SELECT COUNT(*) FROM Document");
+            nextId = new AtomicInteger(idSet.getInt(1));
+        }
     }
 
     /**
@@ -168,14 +172,14 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
-     * Gets the next document ID.
+     * Gets the next document ID, and increments the next document ID number by one.
      *
-     * <p>Possible implementations include counting the columns and reading the columns
-     * until you find the next available ID.
-     * @return The next unique document ID
+     * <p>The next document ID is synchronized across all database connections
+     * and is not refreshed with commits. It is only read once per application
+     * startup.
      */
-    public int nextDocId() {
-        return 0;
+    public static int nextDocId() {
+        return nextId.getAndIncrement();
     }
 
     /**

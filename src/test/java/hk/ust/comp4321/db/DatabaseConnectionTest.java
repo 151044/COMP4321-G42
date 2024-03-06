@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class DatabaseConnectionTest {
 
     DatabaseConnection conn;
@@ -19,12 +21,8 @@ class DatabaseConnectionTest {
     }
 
     @AfterEach
-    void tearDown() throws SQLException {
+    void tearDown() throws SQLException, IOException {
         conn.close();
-    }
-
-    @AfterAll
-    static void delete() throws IOException {
         Files.deleteIfExists(Path.of("test.db"));
     }
 
@@ -42,6 +40,7 @@ class DatabaseConnectionTest {
 
     @Test
     void insertDocument() {
+
     }
 
     @Test
@@ -70,5 +69,7 @@ class DatabaseConnectionTest {
 
     @Test
     void nextDocId() {
+        assertEquals(0, DatabaseConnection.nextDocId());
+
     }
 }
