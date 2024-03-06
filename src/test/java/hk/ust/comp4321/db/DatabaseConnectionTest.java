@@ -38,7 +38,7 @@ class DatabaseConnectionTest {
     void getDocFromId() throws NoSuchFieldException, IllegalAccessException, SQLException, MalformedURLException {
         resetId();
         conn = new DatabaseConnection(Path.of("test-data/test-data.db"));
-        assertThrows(IllegalArgumentException.class, () -> conn.getDocFromId(10));
+        assertThrows(IllegalArgumentException.class, () -> conn.getDocFromId(1000));
         Document doc = conn.getDocFromId(0);
         assertEquals(0, doc.id());
         assertEquals(new URL("https://www.cse.ust.hk/~kwtleung/"), doc.url());

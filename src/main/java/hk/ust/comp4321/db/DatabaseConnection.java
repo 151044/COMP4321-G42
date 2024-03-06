@@ -138,11 +138,20 @@ public class DatabaseConnection implements AutoCloseable {
 
     /**
      * Inserts a link into the document link database.
-     * @param docId The parent document id
-     * @param child The child document id
+     * @param docId The parent document ID
+     * @param child The child document ID
      */
     public void insertLink(int docId, int child) {
 
+    }
+
+    /**
+     * Retrieves the list of children documents for the specified document ID.
+     * @param docId The document ID to retrieve the children for
+     * @return A list of child documents for the specified document ID
+     */
+    public List<Document> children(int docId) {
+        return List.of();
     }
 
     /**
