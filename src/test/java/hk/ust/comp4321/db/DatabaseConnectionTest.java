@@ -82,6 +82,11 @@ class DatabaseConnectionTest {
     }
 
     @Test
+    void children() {
+
+    }
+
+    @Test
     void nextDocId() throws NoSuchFieldException, IllegalAccessException, SQLException {
         assertEquals(0, DatabaseConnection.nextDocId());
         assertEquals(1, DatabaseConnection.nextDocId());
