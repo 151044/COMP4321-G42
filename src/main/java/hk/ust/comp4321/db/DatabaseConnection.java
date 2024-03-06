@@ -120,7 +120,8 @@ public class DatabaseConnection implements AutoCloseable {
      * Finds the corresponding word frequencies of the stem.
      * This <strong>does not</strong> retrieve the title frequency.
      * @param stem The stem to find the word frequencies for
-     * @return The list of word frequencies associated with this stem
+     * @return The list of word frequencies associated with this stem, or an empty
+     * list if the word does not exist in the database
      */
     public List<WordFrequency> frequenciesOf(String stem) {
        return List.of();
@@ -130,7 +131,8 @@ public class DatabaseConnection implements AutoCloseable {
      * Finds the corresponding title word frequencies of the stem.
      * This <strong>does not</strong> retrieve the word frequency in the document body.
      * @param stem The stem to find the word frequencies for
-     * @return The list of word frequencies associated with this stem
+     * @return The list of word frequencies associated with this stem, or an empty
+     * list if the word does not exist in the database
      */
     public List<WordFrequency> frequenciesOfTitle(String stem) {
         return List.of();
