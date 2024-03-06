@@ -176,9 +176,15 @@ public class DatabaseConnection implements AutoCloseable {
      *
      * <p>The next document ID is synchronized across all database connections
      * and is not refreshed with commits. It is only read once per application
-     * startup.
+     * startup. Specifically, it is only read once on the first constructor invocation
+     * of this class.
+     * @throws IllegalStateException If no instances of this class has been created yet
      */
     public static int nextDocId() {
+        if (nextId == null) {
+            throw new IllegalStateException("No database connection initialized." +
+                    "Please create an instance of DatabaseConnection first.");
+        }
         return nextId.getAndIncrement();
     }
 
