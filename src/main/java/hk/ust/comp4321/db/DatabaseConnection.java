@@ -54,6 +54,7 @@ public class DatabaseConnection implements AutoCloseable {
             ResultSet idSet = queryId.executeQuery("SELECT COUNT(*) FROM Document");
             nextId = new AtomicInteger(idSet.getInt(1));
         }
+        commit();
     }
 
     /**
