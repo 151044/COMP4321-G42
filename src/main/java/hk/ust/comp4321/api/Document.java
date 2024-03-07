@@ -43,7 +43,7 @@ public final class Document {
      * Retrieves the list of words in this document from the database.
      *
      * <p>Note that this call is very computationally expensive - the database
-     * design makes retrieving a list of all words very slow. Effective, the
+     * design makes retrieving a list of all words very slow. Effectively, the
      * entire database needs to be traversed in order to build this list.
      * Please use this method sparingly.
      * @param conn The database connection to use
