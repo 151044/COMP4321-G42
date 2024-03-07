@@ -167,12 +167,12 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
-     * Drops all the "forward links" associated with this document ID.
+     * Drops all the children associated with this document ID.
      * This means that all records in the document link table with the
      * specified DocId field should be dropped.
      * @param docId The document ID to purge links for
      */
-    public void deleteForwardLinks(int docId) {
+    public void deleteChildren(int docId) {
 
     }
 

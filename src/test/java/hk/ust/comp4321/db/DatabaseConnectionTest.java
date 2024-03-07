@@ -158,12 +158,12 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void deleteForwardLinks() {
-        assertDoesNotThrow(() -> conn.deleteForwardLinks(1000)); // Invalid ID
-        conn.deleteForwardLinks(0);
+    void deleteChildren() {
+        assertDoesNotThrow(() -> conn.deleteChildren(1000)); // Invalid ID
+        conn.deleteChildren(0);
         assertEquals(0, conn.children(0).size()); // Dropped tables should have no children left
         assertEquals(2, conn.children(3).size()); // Unaffected tables should be unaffected
-        assertDoesNotThrow(() -> conn.deleteForwardLinks(0)); // Deleting the same thing shouldn't crash
+        assertDoesNotThrow(() -> conn.deleteChildren(0)); // Deleting the same thing shouldn't crash
     }
 
     @Test
