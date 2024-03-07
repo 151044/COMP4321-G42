@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * Note: you don't need to specify text length in SQLite, so varchar without the brackets
  * is fine. Also, ResultSet and PreparedStatements are 1-based. :(
+ *
+ * 2nd Note: You can't use "INSERT INTO ? ...". The table cannot be dynamically substituted.
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
