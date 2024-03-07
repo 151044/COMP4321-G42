@@ -19,7 +19,7 @@ public final class Document {
     private final URL url;
     private final long lastModified;
     private final int id;
-    private final int size;
+    private final long size;
     private final Map<String, WordFrequency> bodyFrequencies = new HashMap<>();
     private final Map<String, WordFrequency> titleFrequencies = new HashMap<>();
     private final List<URL> children = new ArrayList<>();
@@ -32,7 +32,7 @@ public final class Document {
      * @param id The document ID; must be unique
      * @param size The number of words of the document
      */
-    public Document(URL url, long lastModified, int id, int size) {
+    public Document(URL url, long lastModified, int id, long size) {
         this.url = url;
         this.lastModified = lastModified;
         this.id = id;
@@ -41,6 +41,11 @@ public final class Document {
 
     /**
      * Retrieves the list of words in this document from the database.
+     *
+     * <p>Note that this call is very computationally expensive - the database
+     * design makes retrieving a list of all words very slow. Effective, the
+     * entire database needs to be traversed in order to build this list.
+     * Please use this method sparingly.
      * @param conn The database connection to use
      * @throws SQLException If there is an SQL error
      */
@@ -146,7 +151,7 @@ public final class Document {
      * Gets the size of the document, which is the number of words in the body.
      * @return The size of the document
      */
-    public int size() {
+    public long size() {
         return size;
     }
 
