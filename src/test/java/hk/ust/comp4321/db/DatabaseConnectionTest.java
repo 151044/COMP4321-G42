@@ -18,8 +18,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DatabaseConnectionTest {
     private static void resetId() throws NoSuchFieldException, IllegalAccessException {
@@ -74,6 +73,10 @@ class DatabaseConnectionTest {
         conn.commit();
         conn.close();
 
+        /*
+         * Note: Since we bypassed all proper APIs to insert Documents into the database,
+         * the Doc IDs are wrong. We close and reopen the connection to fix this problem.
+         */
         resetId();
         conn = new DatabaseConnection(Path.of("test.db"));
     }
@@ -126,6 +129,7 @@ class DatabaseConnectionTest {
 
     @Test
     void insertWord() {
+
     }
 
     @Test
@@ -155,26 +159,33 @@ class DatabaseConnectionTest {
 
     @Test
     void deleteForwardLinks() {
+        assertDoesNotThrow(() -> conn.deleteForwardLinks(1000)); // Invalid ID
+        conn.deleteForwardLinks(0);
+        assertEquals(0, conn.children(0).size()); // Dropped tables should have no children left
+        assertEquals(2, conn.children(3).size()); // Unaffected tables should be unaffected
+        assertDoesNotThrow(() -> conn.deleteForwardLinks(0)); // Deleting the same thing shouldn't crash
     }
 
     @Test
     void commit() {
+
     }
 
     @Test
     void children() {
-
+        assertEquals(4, conn.children(0).size()); // 4 children, as expected
+        assertEquals(0, conn.children(0).size()); // IDs which don't exist should return 0
     }
 
     @Test
     void nextDocId() throws NoSuchFieldException, IllegalAccessException, SQLException {
-        assertEquals(5, DatabaseConnection.nextDocId());
-        assertEquals(6, DatabaseConnection.nextDocId());
+        assertEquals(5, DatabaseConnection.nextDocId()); // currently 5 docs, so next ID is 5
+        assertEquals(6, DatabaseConnection.nextDocId()); // 6 after last allocation
 
         resetId();
         connectEmpty();
-        assertEquals(0, DatabaseConnection.nextDocId());
-        assertEquals(1, DatabaseConnection.nextDocId());
+        assertEquals(0, DatabaseConnection.nextDocId()); // 0 since we connected to an empty DB
+        assertEquals(1, DatabaseConnection.nextDocId()); // 1 after last allocation
     }
 
     /**
