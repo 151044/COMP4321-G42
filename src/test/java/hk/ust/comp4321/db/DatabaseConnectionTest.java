@@ -71,6 +71,11 @@ class DatabaseConnectionTest {
         insertInto(insert, links);
 
         state.close();
+        conn.commit();
+        conn.close();
+
+        resetId();
+        conn = new DatabaseConnection(Path.of("test.db"));
     }
 
     private static void insertInto(PreparedStatement insert, List<List<Integer>> data) {
@@ -112,7 +117,7 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void getDocFromId() throws NoSuchFieldException, IllegalAccessException, SQLException, MalformedURLException {
+    void getDocFromId() throws MalformedURLException {
         assertThrows(IllegalArgumentException.class, () -> conn.getDocFromId(1000));
         Document doc = conn.getDocFromId(0);
         assertEquals(0, doc.id());
@@ -163,8 +168,8 @@ class DatabaseConnectionTest {
 
     @Test
     void nextDocId() throws NoSuchFieldException, IllegalAccessException, SQLException {
-        assertEquals(2, DatabaseConnection.nextDocId());
-        assertEquals(3, DatabaseConnection.nextDocId());
+        assertEquals(5, DatabaseConnection.nextDocId());
+        assertEquals(6, DatabaseConnection.nextDocId());
 
         resetId();
         connectEmpty();
