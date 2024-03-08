@@ -63,7 +63,7 @@ public abstract class TableOperation {
                 .column("location", INTEGER)
                 .constraints(
                         DSL.primaryKey("docId", "paragraph", "sentence", "location"),
-                        DSL.foreignKey("docId").references(DSL.table("Document"))
+                        DSL.foreignKey("docId").references("Document", "docId")
                 ).execute();
         create.insertInto(DSL.table("Document"))
                 .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation())

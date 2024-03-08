@@ -3,6 +3,7 @@ package hk.ust.comp4321.db;
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.test.ReflectUtil;
 import org.jooq.DSLContext;
+import org.jooq.exception.IntegrityConstraintViolationException;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +63,6 @@ class DatabaseConnectionTest {
                 new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html", 3, Instant.ofEpochMilli(95023232344L), 263942533),
                 new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()", 4, Instant.ofEpochMilli(93690504), 2639425)
         );
-        insert = connect.prepareStatement("INSERT INTO Document VALUES (?, ?, ?, ?)");
 
         insertDoc(DSL.using(conn.getConnection()), docs);
 
@@ -100,11 +100,9 @@ class DatabaseConnectionTest {
     }
 
     private static void insertDoc(DSLContext create, List<DocumentTuple> tuple) {
-        tuple.forEach(doc -> {
-                create.insertInto(DSL.table("Document"))
-                                .values(doc.url, doc.docId, doc.lastMod, doc.size)
-                                        .execute();
-        });
+        tuple.forEach(doc -> create.insertInto(DSL.table("Document"))
+                        .values(doc.url, doc.docId, doc.lastMod, doc.size)
+                                .execute());
     }
 
     @AfterEach
@@ -124,11 +122,17 @@ class DatabaseConnectionTest {
 
     @Test
     void insertLink() {
-
+        assertThrows(IntegrityConstraintViolationException.class, () -> conn.insertLink(1000, 1000));
+        System.out.println(conn.children(1000));
     }
 
     @Test
     void deleteFrequencies() {
+        assertDoesNotThrow(() -> conn.deleteFrequencies(1000)); // deleting nonexistent ID does not fail
+        conn.deleteFrequencies(0);
+        assertTrue(conn.bodyOperator().getFrequency("Comput").stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
+        assertTrue(conn.titleOperator().getFrequency("Comput").stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
+        assertEquals(2, conn.bodyOperator().getFrequency("Comput").size()); // 2 frequency records remaining
     }
 
     @Test

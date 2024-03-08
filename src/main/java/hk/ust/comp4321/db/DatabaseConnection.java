@@ -48,20 +48,21 @@ public class DatabaseConnection implements AutoCloseable {
     public DatabaseConnection(Path path) throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
         create = DSL.using(conn, SQLDialect.SQLITE);
+        create.execute("PRAGMA foreign_keys = TRUE");
         create.createTableIfNotExists("Document")
                 .column("url", VARCHAR)
                 .column("docId", INTEGER)
                 .column("lastModified", INSTANT)
                 .column("size", BIGINT)
                 .constraint(
-                        DSL.primaryKey("url")
+                        DSL.primaryKey("docId")
                 ).execute();
         create.createTableIfNotExists("DocumentLink")
                 .column("docId", INTEGER)
                 .column("childId", INTEGER)
                 .constraints(
                         DSL.primaryKey("docId", "childId"),
-                        DSL.foreignKey("docId").references(DSL.table("Document"))
+                        DSL.foreignKey("docId").references("Document", "docId")
                 )
                 .execute();
 
