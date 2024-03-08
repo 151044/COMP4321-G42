@@ -2,8 +2,8 @@
 ## Document Table (Document)
 | Field Name   | Data Type           | Is Primary Key |
 |--------------|---------------------|----------------|
-| url          | Varchar (String)    | True           |
-| docId        | Integer             | False          |
+| url          | Varchar (String)    | False          |
+| docId        | Integer             | True           |
 | lastModified | Instant (java.time) | False          |
 | size         | Long (BIGINT)       | False          |
 
