@@ -36,12 +36,12 @@ class DatabaseConnectionTest {
         conn = new DatabaseConnection(Path.of("test.db"));
         Connection connect = conn.getConnection();
         Statement state = connect.createStatement();
-        state.execute("CREATE TABLE Comput (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
+        state.execute("CREATE TABLE Comput_body (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
         state.execute("CREATE TABLE Comput_title (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
         state.execute("CREATE TABLE Locat_title (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer);");
-        state.execute("CREATE TABLE Locat (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
+        state.execute("CREATE TABLE Locat_body (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
 
-        PreparedStatement insert = connect.prepareStatement("INSERT INTO Comput VALUES (?, ?, ?, ?)");
+        PreparedStatement insert = connect.prepareStatement("INSERT INTO Comput_body VALUES (?, ?, ?, ?)");
 
         List<List<Integer>> computEntries = List.of(List.of(0, 1, 1, 1), List.of(0, 1, 2, 3), List.of(0, 99, 2, 3),
                 List.of(1, 3, 2, 1), List.of(1, 3270972, 2, 1));
@@ -128,29 +128,8 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void insertWord() {
-
-    }
-
-    @Test
-    void insertTitleWord() {
-    }
-
-    @Test
-    void insertDocument() {
-
-    }
-
-    @Test
-    void frequenciesOf() {
-    }
-
-    @Test
-    void frequenciesOfTitle() {
-    }
-
-    @Test
     void insertLink() {
+
     }
 
     @Test
@@ -158,9 +137,10 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void deleteChildren() {
+    void deleteChildren() throws SQLException {
         assertDoesNotThrow(() -> conn.deleteChildren(1000)); // Invalid ID
         conn.deleteChildren(0);
+        conn.commit();
         assertEquals(0, conn.children(0).size()); // Dropped tables should have no children left
         assertEquals(2, conn.children(3).size()); // Unaffected tables should be unaffected
         assertDoesNotThrow(() -> conn.deleteChildren(0)); // Deleting the same thing shouldn't crash
@@ -174,7 +154,13 @@ class DatabaseConnectionTest {
     @Test
     void children() {
         assertEquals(4, conn.children(0).size()); // 4 children, as expected
-        assertEquals(0, conn.children(0).size()); // IDs which don't exist should return 0
+        assertEquals(0, conn.children(0).size()); // Non-existent IDs should return 0
+    }
+
+    @Test
+    void parents() {
+        assertEquals(2, conn.parents(2).size()); // 2 parents, as expected
+        assertEquals(0, conn.parents(1000).size()); // Non-existent IDs should return 0
     }
 
     @Test

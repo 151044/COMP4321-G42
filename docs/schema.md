@@ -14,9 +14,11 @@
 | ChildId    | Integer   | False          |
 
 ## Word Table(s)
-Note: The name of each (stemmed) word is the table name.
+Note: The name of each (stemmed) word is the table name, followed by `_body`.
+For example, one such table might be `Comput_body`.
 
 Tables for stems in titles are named `{stem}_title`.
+The corresponding example to the one above is `Comput_title`.
 
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|

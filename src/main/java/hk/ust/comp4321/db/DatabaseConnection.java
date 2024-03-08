@@ -1,7 +1,6 @@
 package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
-import hk.ust.comp4321.api.WordFrequency;
 
 import java.nio.file.Path;
 import java.sql.*;
@@ -73,38 +72,6 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
-     * Inserts a word into the database.
-     *
-     * <p>The typical workflow is as follows:
-     * <ol>
-     *     <li>Check if the table corresponding to the word
-     *          exists, and create it if needed.</li>
-     *     <li>Update the table with the word frequency.</li>
-     * </ol>
-     * @param stem The stemmed word to insert
-     * @param freq The word frequency record to associate with this word
-     */
-    public void insertWord(String stem, WordFrequency freq) {
-
-    }
-
-    /**
-     * Inserts a word into the corresponding title table of the database.
-     *
-     * <p>The typical workflow is as follows:
-     * <ol>
-     *     <li>Check if the title table corresponding to the word
-     *          exists, and create it if needed.</li>
-     *     <li>Update the table with the word frequency.</li>
-     * </ol>
-     * @param stem The stemmed word to insert
-     * @param freq The word frequency record to associate with this word
-     */
-    public void insertTitleWord(String stem, WordFrequency freq) {
-
-    }
-
-    /**
      * Inserts a document into the database, or updates its last modified time
      * if it exists.
      *
@@ -116,28 +83,6 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public void insertDocument(Document doc) {
 
-    }
-
-    /**
-     * Finds the corresponding word frequencies of the stem.
-     * This <strong>does not</strong> retrieve the title frequency.
-     * @param stem The stem to find the word frequencies for
-     * @return The list of word frequencies associated with this stem, or an empty
-     * list if the word does not exist in the database
-     */
-    public List<WordFrequency> frequenciesOf(String stem) {
-       return List.of();
-    }
-
-    /**
-     * Finds the corresponding title word frequencies of the stem.
-     * This <strong>does not</strong> retrieve the word frequency in the document body.
-     * @param stem The stem to find the word frequencies for
-     * @return The list of word frequencies associated with this stem, or an empty
-     * list if the word does not exist in the database
-     */
-    public List<WordFrequency> frequenciesOfTitle(String stem) {
-        return List.of();
     }
 
     /**
@@ -159,7 +104,18 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Retrieves the list of parent documents for the specified document ID.
+     * @param docId The document ID to retrieve the parents for
+     * @return A list of parent documents for the specified document ID
+     */
+    public List<Document> parents(int docId) {
+        return List.of();
+    }
+
+    /**
      * Drops all the word frequency records associated with this document ID.
+     *
+     * <p>This also has a significant performance impact - use with care.
      * @param docId The document ID to purge frequencies for
      */
     public void deleteFrequencies(int docId) {
@@ -174,6 +130,26 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public void deleteChildren(int docId) {
 
+    }
+
+    /**
+     * Gets the TableOperation object which operates on the tables
+     * which represent words in the body of a document.
+     * @return The TableOperation object to operate on tables associated
+     *         with document bodies
+     */
+    public TableOperation bodyOperator() {
+        return new BodyTableOperation(conn);
+    }
+
+    /**
+     * Gets the TableOperation object which operates on the tables
+     * which represent words in the title of a document.
+     * @return The TableOperation object to operate on tables associated
+     *         with document titles
+     */
+    public TableOperation titleOperator() {
+        return new TitleTableOperation(conn);
     }
 
     /**
