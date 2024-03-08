@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -17,7 +18,7 @@ import java.util.*;
  */
 public final class Document {
     private final URL url;
-    private final long lastModified;
+    private final Instant lastModified;
     private final int id;
     private final long size;
     private final Map<String, WordFrequency> bodyFrequencies = new HashMap<>();
@@ -32,7 +33,7 @@ public final class Document {
      * @param id The document ID; must be unique
      * @param size The number of words of the document
      */
-    public Document(URL url, long lastModified, int id, long size) {
+    public Document(URL url, int id, Instant lastModified, long size) {
         this.url = url;
         this.lastModified = lastModified;
         this.id = id;
@@ -94,9 +95,9 @@ public final class Document {
 
     /**
      * Gets the time when the document is last modified.
-     * @return The Unix timestamp at which this document is modified
+     * @return The Instant at which this document is modified
      */
-    public long lastModified() {
+    public Instant lastModified() {
         return lastModified;
     }
 

@@ -2,6 +2,8 @@ package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.test.ReflectUtil;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -53,15 +56,15 @@ class DatabaseConnectionTest {
         insertInto(insert, computTitles);
 
         List<DocumentTuple> docs = List.of(
-                new DocumentTuple("https://www.cse.ust.hk/~kwtleung/", 0, 1709693690504L, 25565),
-                new DocumentTuple("https://www.w3schools.com/sql/sql_insert.asp", 1, 1709693690504L, 25565),
-                new DocumentTuple("https://sqlite.org/lang_datefunc.html", 2, 93690504, 2639425),
-                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html", 3, 95023232344L, 263942533),
-                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()", 4, 93690504, 2639425)
+                new DocumentTuple("https://www.cse.ust.hk/~kwtleung/", 0, Instant.ofEpochMilli(1709693690504L), 25565),
+                new DocumentTuple("https://www.w3schools.com/sql/sql_insert.asp", 1, Instant.ofEpochMilli(1709693690504L), 25565),
+                new DocumentTuple("https://sqlite.org/lang_datefunc.html", 2, Instant.ofEpochMilli(93690504), 2639425),
+                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html", 3, Instant.ofEpochMilli(95023232344L), 263942533),
+                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()", 4, Instant.ofEpochMilli(93690504), 2639425)
         );
         insert = connect.prepareStatement("INSERT INTO Document VALUES (?, ?, ?, ?)");
 
-        insertDoc(insert, docs);
+        insertDoc(DSL.using(conn.getConnection()), docs);
 
         insert = connect.prepareStatement("INSERT INTO DocumentLink VALUES (?, ?)");
 
@@ -69,8 +72,6 @@ class DatabaseConnectionTest {
                 List.of(4, 0), List.of(4, 2), List.of(3, 1), List.of(3, 3));
         insertInto(insert, links);
 
-        state.close();
-        conn.commit();
         conn.close();
 
         /*
@@ -98,17 +99,11 @@ class DatabaseConnectionTest {
         });
     }
 
-    private static void insertDoc(PreparedStatement stmt, List<DocumentTuple> tuple) {
+    private static void insertDoc(DSLContext create, List<DocumentTuple> tuple) {
         tuple.forEach(doc -> {
-            try {
-                stmt.setString(1, doc.url);
-                stmt.setInt(2, doc.docId);
-                stmt.setLong(3, doc.lastMod);
-                stmt.setLong(4, doc.size);
-                stmt.execute();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
+                create.insertInto(DSL.table("Document"))
+                                .values(doc.url, doc.docId, doc.lastMod, doc.size)
+                                        .execute();
         });
     }
 
@@ -137,24 +132,18 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void deleteChildren() throws SQLException {
+    void deleteChildren() {
         assertDoesNotThrow(() -> conn.deleteChildren(1000)); // Invalid ID
         conn.deleteChildren(0);
-        conn.commit();
         assertEquals(0, conn.children(0).size()); // Dropped tables should have no children left
         assertEquals(2, conn.children(3).size()); // Unaffected tables should be unaffected
         assertDoesNotThrow(() -> conn.deleteChildren(0)); // Deleting the same thing shouldn't crash
     }
 
     @Test
-    void commit() {
-
-    }
-
-    @Test
     void children() {
         assertEquals(4, conn.children(0).size()); // 4 children, as expected
-        assertEquals(0, conn.children(0).size()); // Non-existent IDs should return 0
+        assertEquals(0, conn.children(1000).size()); // Non-existent IDs should return 0
     }
 
     @Test
@@ -184,5 +173,5 @@ class DatabaseConnectionTest {
      * @param lastMod The last modified date of the document
      * @param size The size of the document
      */
-    private record DocumentTuple(String url, int docId, long lastMod, long size) {}
+    private record DocumentTuple(String url, int docId, Instant lastMod, long size) {}
 }

@@ -1,11 +1,19 @@
 package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.sql.*;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.jooq.impl.SQLDataType.*;
 
 /**
  * Represents the connection to the underlying database.
@@ -19,43 +27,47 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </a> for details.
  */
 /*
- * Note to implementers: Please use PreparedStatements if your query
- * or statement is going to be run more than once, or has substitutable
- * variables. This prevents SQL injections and speeds up any future queries.
+ * Note to implementers: We have switched to jOOQ in order to have a
+ * nice OO wrapper around SQL. Much of normal SQL still applies in varying ways.
+ * If you need to implement something, please see the current implemented examples.
  *
- * See lab 1 for details, and further examples here.
- *
- * Note: you don't need to specify text length in SQLite, so varchar without the brackets
- * is fine. Also, ResultSet and PreparedStatements are 1-based. :(
- *
- * 2nd Note: You can't use "INSERT INTO ? ...". The table cannot be dynamically substituted.
+ * The jOOQ documentation is here: https://www.jooq.org/doc/3.19/manual/, though it
+ * is a very dense read.
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
     private static AtomicInteger nextId = null;
+    private final DSLContext create;
 
     /**
      * Creates (if it does not exist) and connects to the database at the specified path.
      *
-     * <p>Note that automatic commits have been disabled for performance reasons. Please
-     * remember to call {@link #commit()} for each batch of writes to the database.
      * @param path The path of the database to connect to
      * @throws SQLException If connecting or creating the database fails
      */
     public DatabaseConnection(Path path) throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
-        conn.setAutoCommit(false);
-        Statement createTable = conn.createStatement();
-        createTable.execute("CREATE TABLE IF NOT EXISTS Document " +
-                "(URL varchar, DocId integer, LastModified integer, Size integer)");
-        createTable.execute("CREATE TABLE IF NOT EXISTS DocumentLink" +
-                "(DocId integer, ChildId integer)");
+        create = DSL.using(conn, SQLDialect.SQLITE);
+        create.createTableIfNotExists("Document")
+                .column("url", VARCHAR)
+                .column("docId", INTEGER)
+                .column("lastModified", INSTANT)
+                .column("size", BIGINT)
+                .constraint(
+                        DSL.primaryKey("url")
+                ).execute();
+        create.createTableIfNotExists("DocumentLink")
+                .column("docId", INTEGER)
+                .column("childId", INTEGER)
+                .constraints(
+                        DSL.primaryKey("docId", "childId"),
+                        DSL.foreignKey("docId").references(DSL.table("Document"))
+                )
+                .execute();
+
         if (nextId == null) {
-            Statement queryId = conn.createStatement();
-            ResultSet idSet = queryId.executeQuery("SELECT COUNT(*) FROM Document");
-            nextId = new AtomicInteger(idSet.getInt(1));
+            nextId = new AtomicInteger(create.fetchCount(DSL.table("Document")));
         }
-        commit();
     }
 
     /**
@@ -68,7 +80,22 @@ public class DatabaseConnection implements AutoCloseable {
      * @return The document associated with this ID.
      */
     public Document getDocFromId(int docId) {
-        return null;
+        return create.select()
+                .from(DSL.table("Document"))
+                .where(
+                        DSL.condition("docId = " + docId)
+                ).fetch().stream().findFirst()
+                .map(r -> {
+                    try {
+                        return new Document(new URL(r.get(0, String.class)),
+                                r.get(1, Integer.class),
+                                r.get(2, Instant.class),
+                                r.get(3, Long.class));
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .orElseThrow(() -> new IllegalArgumentException("No such document ID: " + docId));
     }
 
     /**
@@ -82,7 +109,12 @@ public class DatabaseConnection implements AutoCloseable {
      * @param doc The document to insert into
      */
     public void insertDocument(Document doc) {
-
+        create.insertInto(DSL.table("Document"))
+                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size())
+                .onDuplicateKeyUpdate()
+                .set(DSL.field("lastModified", INSTANT), doc.lastModified())
+                .set(DSL.field("size", BIGINT), doc.size())
+                .execute();
     }
 
     /**
@@ -91,7 +123,10 @@ public class DatabaseConnection implements AutoCloseable {
      * @param child The child document ID
      */
     public void insertLink(int docId, int child) {
-
+        create.insertInto(DSL.table("DocumentLink"))
+                .values(docId, child)
+                .onDuplicateKeyIgnore()
+                .execute();
     }
 
     /**
@@ -100,7 +135,9 @@ public class DatabaseConnection implements AutoCloseable {
      * @return A list of child documents for the specified document ID
      */
     public List<Document> children(int docId) {
-        return List.of();
+        return create.select(DSL.field("childId")).from(DSL.table("DocumentLink"))
+                .where(DSL.condition("docId = " + docId))
+                .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
     }
 
     /**
@@ -109,7 +146,9 @@ public class DatabaseConnection implements AutoCloseable {
      * @return A list of parent documents for the specified document ID
      */
     public List<Document> parents(int docId) {
-        return List.of();
+        return create.select(DSL.field("docId")).from(DSL.table("DocumentLink"))
+                .where(DSL.condition("childId = " + docId))
+                .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
     }
 
     /**
@@ -119,7 +158,8 @@ public class DatabaseConnection implements AutoCloseable {
      * @param docId The document ID to purge frequencies for
      */
     public void deleteFrequencies(int docId) {
-
+        bodyOperator().deleteFrequencies(docId);
+        titleOperator().deleteFrequencies(docId);
     }
 
     /**
@@ -129,7 +169,9 @@ public class DatabaseConnection implements AutoCloseable {
      * @param docId The document ID to purge links for
      */
     public void deleteChildren(int docId) {
-
+        create.delete(DSL.table("DocumentLink"))
+                .where(DSL.condition("docId = " + docId))
+                .execute();
     }
 
     /**
