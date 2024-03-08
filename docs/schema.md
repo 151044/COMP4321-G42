@@ -2,16 +2,16 @@
 ## Document Table (Document)
 | Field Name   | Data Type                | Is Primary Key |
 |--------------|--------------------------|----------------|
-| URL          | Varchar (String)         | True           |
-| DocId        | Integer                  | False          |
-| LastModified | Integer (Unix Timestamp) | False          |
-| Size         | Integer                  | False          |
+| url          | Varchar (String)         | True           |
+| docId        | Integer                  | False          |
+| lastModified | Integer (Unix Timestamp) | False          |
+| size         | Integer                  | False          |
 
 ## Document Link Table (DocumentLink)
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
-| DocId      | Integer   | True           |
-| ChildId    | Integer   | False          |
+| docId      | Integer   | True           |
+| childId    | Integer   | False          |
 
 ## Word Table(s)
 Note: The name of each (stemmed) word is the table name, followed by `_body`.
@@ -22,7 +22,7 @@ The corresponding example to the one above is `Comput_title`.
 
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
-| DocId      | Integer   | True           |
-| Paragraph  | Integer   | True           |
-| Sentence   | Integer   | True           |
-| Location   | Integer   | True           |
+| docId      | Integer   | True           |
+| paragraph  | Integer   | True           |
+| sentence   | Integer   | True           |
+| location   | Integer   | True           |
