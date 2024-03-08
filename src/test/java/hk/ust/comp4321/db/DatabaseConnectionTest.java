@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -122,8 +123,11 @@ class DatabaseConnectionTest {
 
     @Test
     void insertLink() {
-        assertThrows(IntegrityConstraintViolationException.class, () -> conn.insertLink(1000, 1000));
-        System.out.println(conn.children(1000));
+        assertThrows(IntegrityConstraintViolationException.class, () -> conn.insertLink(1000, 1000)); // nonexistent docId should not work
+        conn.insertLink(2, 3);
+        assertTrue(conn.children(2).stream().anyMatch(doc -> doc.id() == 3)); // normal insert link
+        assertDoesNotThrow(() -> conn.insertLink(2, 3)); // multiple insertions do not crash
+        assertEquals(1, conn.children(2).size()); // multiple insertions do not crash
     }
 
     @Test
@@ -165,6 +169,16 @@ class DatabaseConnectionTest {
         connectEmpty();
         assertEquals(0, DatabaseConnection.nextDocId()); // 0 since we connected to an empty DB
         assertEquals(1, DatabaseConnection.nextDocId()); // 1 after last allocation
+    }
+
+    @Test
+    void insertDocument() throws MalformedURLException {
+        Instant prev = Instant.now();
+        conn.insertDocument(new Document(URI.create("https://github.com/151044/COMP4321-G42/pull/2").toURL(), DatabaseConnection.nextDocId(), prev, 234324444L));
+        assertDoesNotThrow(() -> conn.getDocFromId(5)); // successful insertion
+        conn.insertDocument(new Document(URI.create("https://github.com/151044/COMP4321-G42/pull/2").toURL(), 5, Instant.now(), 2));
+        assertTrue(prev.isBefore(conn.getDocFromId(5).lastModified())); // checks if we have correctly updated on duplicate insert
+        assertEquals(2, conn.getDocFromId(5).size()); // ditto
     }
 
     /**

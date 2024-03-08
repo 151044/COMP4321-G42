@@ -196,15 +196,6 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
-     * Commits all changes to the database which have occurred before the last call
-     * to this method.
-     * @throws SQLException If committing to the database throws an error
-     */
-    public void commit() throws SQLException {
-        conn.commit();
-    }
-
-    /**
      * Gets the next document ID, and increments the next document ID number by one.
      *
      * <p>The next document ID is synchronized across all database connections
