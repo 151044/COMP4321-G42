@@ -3,5 +3,6 @@
 Our libraries and dependencies include:
 - OpenJDK 17;
 - Jsoup 1.17.2 (HTML Parser);
+- jOOQ 3.19 (SQL Java library);
 - SQLite-JDBC 3.45.1.0 (Database); and
 - SQLite 3.45.1.0
