@@ -1,11 +1,11 @@
 # Database Schema
 ## Document Table (Document)
-| Field Name   | Data Type                | Is Primary Key |
-|--------------|--------------------------|----------------|
-| url          | Varchar (String)         | True           |
-| docId        | Integer                  | False          |
-| lastModified | Integer (Unix Timestamp) | False          |
-| size         | Integer                  | False          |
+| Field Name   | Data Type           | Is Primary Key |
+|--------------|---------------------|----------------|
+| url          | Varchar (String)    | True           |
+| docId        | Integer             | False          |
+| lastModified | Instant (java.time) | False          |
+| size         | Long (BIGINT)       | False          |
 
 ## Document Link Table (DocumentLink)
 | Field Name | Data Type | Is Primary Key |
