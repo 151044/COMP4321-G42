@@ -37,8 +37,9 @@ class DatabaseConnectionTest {
     DatabaseConnection conn;
     @BeforeEach
     void setUp() throws SQLException, NoSuchFieldException, IllegalAccessException {
+        Path testPath = Path.of("test.db");
         resetId();
-        conn = new DatabaseConnection(Path.of("test.db"));
+        conn = new DatabaseConnection(testPath);
         Connection connect = conn.getConnection();
         Statement state = connect.createStatement();
         state.execute("CREATE TABLE Comput_body (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
@@ -80,7 +81,7 @@ class DatabaseConnectionTest {
          * the Doc IDs are wrong. We close and reopen the connection to fix this problem.
          */
         resetId();
-        conn = new DatabaseConnection(Path.of("test.db"));
+        conn = new DatabaseConnection(testPath);
     }
 
     private static void insertInto(PreparedStatement insert, List<List<Integer>> data) {

@@ -29,20 +29,20 @@ import java.util.stream.IntStream;
 /**
  * This is the Porter stemming algorithm. It follows the algorithm
  * presented in
- *
+ * <p>
  * Porter, M. "An algorithm for suffix stripping." Program 14.3 (1980): 130-137.
- *
+ * <p>
  * with some optional deviations that can be turned on or off with the
  * `mode` argument to the constructor.
- *
+ * <p>
  * Martin Porter, the algorithm's inventor, maintains a web page about the
  * algorithm at
- *
+ * <p>
  *     <a href="https://www.tartarus.org/~martin/PorterStemmer/">...</a>
- *
+ * <p>
  * which includes another Python implementation and other implementations
  * in many languages.
- *
+ * <p>
  * This is a reimplementation of the NLTK Porter stemmer in Java.
  *
  * @author 151044
@@ -75,10 +75,10 @@ public class NltkPorter {
     /**
      * Finds if the letter at a specified index is a consonant or not.
      * A consonant is defined in the paper as follows:
-     *
+     * <p>
      *             A consonant in a word is a letter other than A, E, I, O or
      *             U, and other than Y preceded by a consonant. (The fact that
-     *             the term `consonant' is defined to some extent in terms of
+     *             the term "consonant" is defined to some extent in terms of
      *             itself does not make it ambiguous.) So in TOY the consonants
      *             are T and Y, and in SYZYGY they are S, Z and G. If a letter
      *             is not a consonant it is a vowel.
@@ -103,34 +103,34 @@ public class NltkPorter {
 
     /**
      * Returns the 'measure' of stem, per definition in the paper.
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *             A consonant will be denoted by c, a vowel by v. A list
      *             ccc... of length greater than 0 will be denoted by C, and a
      *             list vvv... of length greater than 0 will be denoted by V.
      *             Any word, or part of a word, therefore has one of the four
      *             forms:
-     *
+     * <p>
      *                 CVCV ... C
      *                 CVCV ... V
      *                 VCVC ... C
      *                 VCVC ... V
-     *
+     * <p>
      *             These may all be represented by the single form
-     *
+     * <p>
      *                 [C]VCVC ... [V]
-     *
+     * <p>
      *             where the square brackets denote arbitrary presence of their
      *             contents. Using (VC){m} to denote VC repeated m times, this
      *             may again be written as
-     *
+     * <p>
      *                 [C](VC){m}[V].
-     *
+     * <p>
      *             m will be called the \measure\ of any word or word part when
      *             represented in this form. The case m = 0 covers the null
      *             word. Here are some examples:
-     *
+     * <p>
      *                 m=0    TR,  EE,  TREE,  Y,  BY.
      *                 m=1    TROUBLE,  OATS,  TREES,  IVY.
      *                 m=2    TROUBLES,  PRIVATE,  OATEN,  ORRERY.
@@ -214,9 +214,9 @@ public class NltkPorter {
     );
     /**
      * Implements Step 1a from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *             SSES -> SS                         caresses  ->  caress
      *             IES  -> I                          ponies    ->  poni
      *                                                ties      ->  ti
@@ -243,19 +243,19 @@ public class NltkPorter {
     private static final List<Character> LSZ = List.of('l', 's', 'z');
     /**
      * Implements Step 1b from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *             (m>0) EED -> EE                    feed      ->  feed
      *                                                agreed    ->  agree
      *             (*v*) ED  ->                       plastered ->  plaster
      *                                                bled      ->  bled
      *             (*v*) ING ->                       motoring  ->  motor
      *                                                sing      ->  sing
-     *
+     * <p>
      *         If the second or third of the rules in Step 1b is successful,
      *         the following is done:
-     *
+     * <p>
      *             AT -> ATE                       conflat(ed)  ->  conflate
      *             BL -> BLE                       troubl(ed)   ->  trouble
      *             IZ -> IZE                       siz(ed)      ->  size
@@ -268,7 +268,7 @@ public class NltkPorter {
      *                                             fizz(ed)     ->  fizz
      *             (m=1 and *o) -> E               fail(ing)    ->  fail
      *                                             fil(ing)     ->  file
-     *
+     * <p>
      *         The rule to map to a single letter causes the removal of one of
      *         the double letter pair. The -E is put back on -AT, -BL and -IZ,
      *         so that the suffixes -ATE, -BLE and -IZE can be recognised
@@ -309,11 +309,11 @@ public class NltkPorter {
     );
     /**
      * Implements Step 1c from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *         Step 1c
-     *
+     * <p>
      *             (*v*) Y -> I                    happy        ->  happi
      *                                             sky          ->  sky
      * @param word The word to apply the rules to
@@ -357,11 +357,11 @@ public class NltkPorter {
     }
     /**
      * Implements Step 2 from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *         Step 2
-     *
+     * <p>
      *             (m>0) ATIONAL ->  ATE       relational     ->  relate
      *             (m>0) TIONAL  ->  TION      conditional    ->  condition
      *                                         rational       ->  rational
@@ -405,11 +405,11 @@ public class NltkPorter {
 
     /**
      * Implements Step 3 from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *         Step 3
-     *
+     * <p>
      *             (m>0) ICATE ->  IC              triplicate     ->  triplic
      *             (m>0) ATIVE ->                  formative      ->  form
      *             (m>0) ALIZE ->  AL              formalize      ->  formal
@@ -452,9 +452,9 @@ public class NltkPorter {
 
     /**
      * Implements Step 4 from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         Step 4
-     *
+     * <p>
      *             (m>1) AL    ->                  revival        ->  reviv
      *             (m>1) ANCE  ->                  allowance      ->  allow
      *             (m>1) ENCE  ->                  inference      ->  infer
@@ -474,7 +474,7 @@ public class NltkPorter {
      *             (m>1) OUS   ->                  homologous     ->  homolog
      *             (m>1) IVE   ->                  effective      ->  effect
      *             (m>1) IZE   ->                  bowdlerize     ->  bowdler
-     *
+     * <p>
      *         The suffixes are now removed. All that remains is a little
      *         tidying up.
      * @param word The word to apply the rules to
@@ -485,12 +485,12 @@ public class NltkPorter {
     }
 
     /**
-     * Implements Step 5a from "An algorithm for suffix stripping"
-     *
+     * Implements Step 5b from "An algorithm for suffix stripping"
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *         Step 5a
-     *
+     * <p>
      *             (m>1) E     ->                  probate        ->  probat
      *                                             rate           ->  rate
      *             (m=1 and not *o) E ->           cease          ->  ceas
@@ -512,11 +512,11 @@ public class NltkPorter {
     );
     /**
      * Implements Step 5a from "An algorithm for suffix stripping"
-     *
+     * <p>
      *         From the paper:
-     *
+     * <p>
      *         Step 5b
-     *
+     * <p>
      *             (m > 1 and *d and *L) -> single letter
      *                                     controll       ->  control
      *                                     roll           ->  roll

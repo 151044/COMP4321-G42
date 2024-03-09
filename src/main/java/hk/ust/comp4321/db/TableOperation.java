@@ -21,11 +21,9 @@ import static org.jooq.impl.SQLDataType.INTEGER;
  * for more efficient manipulation and code reuse.
  */
 public abstract class TableOperation {
-    private final Connection conn;
     private final DSLContext create;
 
     TableOperation(Connection conn) {
-        this.conn = conn;
         create = DSL.using(conn, SQLDialect.SQLITE);
     }
 
@@ -96,10 +94,8 @@ public abstract class TableOperation {
      * @param docId The document IDs to drop
      */
     public void deleteFrequencies(int docId) {
-        getStems().forEach(stem -> {
-            create.delete(DSL.table(stem))
-                    .where(DSL.condition("docId = " + docId))
-                    .execute();
-        });
+        getStems().forEach(stem -> create.delete(DSL.table(stem))
+                .where(DSL.condition("docId = " + docId))
+                .execute());
     }
 }
