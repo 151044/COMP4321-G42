@@ -11,7 +11,7 @@
 | Field Name | Data Type | Is Primary Key |
 |------------|-----------|----------------|
 | docId      | Integer   | True           |
-| childId    | Integer   | False          |
+| childId    | Integer   | True           |
 
 ## Word Table(s)
 Note: The name of each (stemmed) word is the table name, followed by `_body`.
