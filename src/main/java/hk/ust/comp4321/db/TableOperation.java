@@ -63,7 +63,7 @@ public abstract class TableOperation {
                         DSL.primaryKey("docId", "paragraph", "sentence", "location"),
                         DSL.foreignKey("docId").references("Document", "docId")
                 ).execute();
-        create.insertInto(DSL.table(stem))
+        create.insertInto(DSL.table(tableName))
                 .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation())
                 .onDuplicateKeyIgnore()
                 .execute();
