@@ -1,6 +1,6 @@
 package hk.ust.comp4321.db;
 
-import hk.ust.comp4321.api.WordFrequency;
+import hk.ust.comp4321.api.WordInfo;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.util.List;
 
 import static org.jooq.impl.SQLDataType.INTEGER;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 /**
  * Encapsulates operations on a group (or a type) of tables.
@@ -52,13 +53,14 @@ public abstract class TableOperation {
      * @param stem The stemmed word to insert
      * @param freq The word frequency record to associate with this word
      */
-    public void insertWord(String stem, WordFrequency freq) {
+    public void insertWord(String stem, WordInfo freq) {
         String tableName = addSuffix(stem);
         create.createTableIfNotExists(tableName)
                 .column("docId", INTEGER)
                 .column("paragraph", INTEGER)
                 .column("sentence", INTEGER)
                 .column("location", INTEGER)
+                .column("suffix", VARCHAR)
                 .constraints(
                         DSL.primaryKey("docId", "paragraph", "sentence", "location"),
                         DSL.foreignKey("docId").references("Document", "docId")
@@ -75,15 +77,15 @@ public abstract class TableOperation {
      * @return The list of word frequencies associated with this stem, or an empty
      * list if the word does not exist in the database
      */
-    public List<WordFrequency> getFrequency(String stem) {
+    public List<WordInfo> getFrequency(String stem) {
         if (create.meta().getTables(addSuffix(stem)).isEmpty()) {
             return List.of();
         } else {
             return create.select()
                     .from(DSL.table(addSuffix(stem)))
                     .fetch()
-                    .stream().map(r -> new WordFrequency(r.get(0, Integer.class), r.get(1, Integer.class),
-                            r.get(2, Integer.class), r.get(3, Integer.class)))
+                    .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
+                            r.get(2, Integer.class), r.get(3, Integer.class), r.get(4, String.class)))
                     .toList();
         }
     }
