@@ -1,6 +1,7 @@
 package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
+import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.test.ReflectUtil;
 import org.jooq.DSLContext;
 import org.jooq.exception.IntegrityConstraintViolationException;
@@ -23,6 +24,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static org.jooq.impl.SQLDataType.INTEGER;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DatabaseConnectionTest {
@@ -41,22 +44,34 @@ class DatabaseConnectionTest {
         resetId();
         conn = new DatabaseConnection(testPath);
         Connection connect = conn.getConnection();
-        Statement state = connect.createStatement();
-        state.execute("CREATE TABLE Comput_body (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
-        state.execute("CREATE TABLE Comput_title (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
-        state.execute("CREATE TABLE Locat_title (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer);");
-        state.execute("CREATE TABLE Locat_body (DocId Integer, Paragraph Integer, Sentence Integer, Location Integer)");
+        DSLContext create = DSL.using(connect);
+        List<String> tableNames = List.of("Comput_body", "Comput_title", "Locat_title", "Locat_body");
+        tableNames.forEach(s -> create.createTableIfNotExists(s)
+                        .column("docId", INTEGER)
+                        .column("paragraph", INTEGER)
+                        .column("sentence", INTEGER)
+                        .column("location", INTEGER)
+                        .column("suffix", VARCHAR)
+                        .execute());
 
-        PreparedStatement insert = connect.prepareStatement("INSERT INTO Comput_body VALUES (?, ?, ?, ?)");
+        PreparedStatement insert;
 
-        List<List<Integer>> computEntries = List.of(List.of(0, 1, 1, 1), List.of(0, 1, 2, 3), List.of(0, 99, 2, 3),
-                List.of(1, 3, 2, 1), List.of(1, 3270972, 2, 1));
-        insertInto(insert, computEntries);
+        List<WordInfo> computEntries = List.of(
+                new WordInfo(0, 1, 1, 1, "ing"),
+                new WordInfo(0, 1, 2, 3, "e"),
+                new WordInfo(0, 99, 2, 3, "ed"),
+                new WordInfo(1, 3, 2, 1, "es"),
+                new WordInfo(1, 3270972, 2, 1, "er"));
+        computEntries.forEach(info -> create.insertInto(DSL.table("Comput_body"))
+                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
+                .execute());
 
-        insert = connect.prepareStatement("INSERT INTO Comput_title VALUES (?, ?, ?, ?)");
-
-        List<List<Integer>> computTitles = List.of(List.of(0, 1, 1, 1), List.of(1, 1, 1, 1));
-        insertInto(insert, computTitles);
+        List<WordInfo> computTitles = List.of(
+                new WordInfo(0, 1, 1, 1, "ing"),
+                new WordInfo(1, 1, 1, 1, "ers"));
+        computTitles.forEach(info -> create.insertInto(DSL.table("Comput_title"))
+                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
+                .execute());
 
         List<DocumentTuple> docs = List.of(
                 new DocumentTuple("https://www.cse.ust.hk/~kwtleung/", 0, Instant.ofEpochMilli(1709693690504L), 25565),
