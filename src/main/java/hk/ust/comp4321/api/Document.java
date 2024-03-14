@@ -21,8 +21,8 @@ public final class Document {
     private final Instant lastModified;
     private final int id;
     private final long size;
-    private final Map<String, WordFrequency> bodyFrequencies = new HashMap<>();
-    private final Map<String, WordFrequency> titleFrequencies = new HashMap<>();
+    private final Map<String, WordInfo> bodyFrequencies = new HashMap<>();
+    private final Map<String, WordInfo> titleFrequencies = new HashMap<>();
     private final List<URL> children = new ArrayList<>();
     private boolean isLoaded = false;
 
@@ -125,7 +125,7 @@ public final class Document {
      * @return The list of words loaded, or an empty map if
      * the words have not been loaded into memory.
      */
-    public Map<String, WordFrequency> bodyFrequencies() {
+    public Map<String, WordInfo> bodyFrequencies() {
         return bodyFrequencies;
     }
 
@@ -135,7 +135,7 @@ public final class Document {
      * @return The list of words loaded, or an empty map if
      * the words have not been loaded into memory.
      */
-    public Map<String, WordFrequency> titleFrequencies() {
+    public Map<String, WordInfo> titleFrequencies() {
         return titleFrequencies;
     }
 
