@@ -20,9 +20,10 @@ For example, one such table might be `Comput_body`.
 Tables for stems in titles are named `{stem}_title`.
 The corresponding example to the one above is `Comput_title`.
 
-| Field Name | Data Type | Is Primary Key |
-|------------|-----------|----------------|
-| docId      | Integer   | True           |
-| paragraph  | Integer   | True           |
-| sentence   | Integer   | True           |
-| location   | Integer   | True           |
+| Field Name | Data Type        | Is Primary Key |
+|------------|------------------|----------------|
+| docId      | Integer          | True           |
+| paragraph  | Integer          | True           |
+| sentence   | Integer          | True           |
+| location   | Integer          | True           |
+| suffix     | Varchar (String) | False          |
