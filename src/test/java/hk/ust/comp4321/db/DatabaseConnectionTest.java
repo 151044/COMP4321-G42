@@ -1,11 +1,9 @@
 package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
-import hk.ust.comp4321.api.WordInfo;
+import hk.ust.comp4321.test.DbUtil;
 import hk.ust.comp4321.test.ReflectUtil;
-import org.jooq.DSLContext;
 import org.jooq.exception.IntegrityConstraintViolationException;
-import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,20 +11,12 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
 
-import static org.jooq.impl.SQLDataType.INTEGER;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DatabaseConnectionTest {
@@ -40,106 +30,8 @@ class DatabaseConnectionTest {
 
     DatabaseConnection conn;
     @BeforeEach
-    void setUp() throws SQLException, NoSuchFieldException, IllegalAccessException {
-        Path testPath = Path.of("test.db");
-        resetId();
-        conn = new DatabaseConnection(testPath);
-        Connection connect = conn.getConnection();
-        DSLContext create = DSL.using(connect);
-        List<String> tableNames = List.of("body_0", "title_0", "title_1", "body_1");
-        tableNames.forEach(s -> create.createTableIfNotExists(s)
-                        .column("docId", INTEGER)
-                        .column("paragraph", INTEGER)
-                        .column("sentence", INTEGER)
-                        .column("location", INTEGER)
-                        .column("suffix", VARCHAR)
-                        .execute());
-
-        create.createTableIfNotExists("WordIndex")
-                .column("stem", VARCHAR)
-                .column("wordId", INTEGER)
-                .column("typeSuffix", VARCHAR)
-                .constraints(
-                        DSL.primaryKey("wordId", "typeSuffix")
-                )
-                .execute();
-
-        List<WordIndexEntry> wordIndices = List.of(
-                new WordIndexEntry("Comput", 0, "body"),
-                new WordIndexEntry("Comput", 0, "title"),
-                new WordIndexEntry("Locat", 1, "body"),
-                new WordIndexEntry("Locat", 1, "title")
-        );
-        wordIndices.forEach(entry -> create.insertInto(DSL.table("WordIndex"))
-                .values(entry.stem(), entry.id(), entry.suffix())
-                .execute());
-
-        PreparedStatement insert;
-
-        List<WordInfo> computEntries = List.of(
-                new WordInfo(0, 1, 1, 1, "ing"),
-                new WordInfo(0, 1, 2, 3, "e"),
-                new WordInfo(0, 99, 2, 3, "ed"),
-                new WordInfo(1, 3, 2, 1, "es"),
-                new WordInfo(1, 3270972, 2, 1, "er"));
-        computEntries.forEach(info -> create.insertInto(DSL.table("body_0"))
-                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
-                .execute());
-
-        List<WordInfo> computTitles = List.of(
-                new WordInfo(0, 1, 1, 1, "ing"),
-                new WordInfo(1, 1, 1, 1, "ers"));
-        computTitles.forEach(info -> create.insertInto(DSL.table("title_0"))
-                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
-                .execute());
-
-        List<DocumentTuple> docs = List.of(
-                new DocumentTuple("https://www.cse.ust.hk/~kwtleung/", 0, Instant.ofEpochMilli(1709693690504L), 25565),
-                new DocumentTuple("https://www.w3schools.com/sql/sql_insert.asp", 1, Instant.ofEpochMilli(1709693690504L), 25565),
-                new DocumentTuple("https://sqlite.org/lang_datefunc.html", 2, Instant.ofEpochMilli(93690504), 2639425),
-                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html", 3, Instant.ofEpochMilli(95023232344L), 263942533),
-                new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()", 4, Instant.ofEpochMilli(93690504), 2639425)
-        );
-
-        insertDoc(create, docs);
-
-        insert = connect.prepareStatement("INSERT INTO DocumentLink VALUES (?, ?)");
-
-        List<List<Integer>> links = List.of(List.of(0, 1), List.of(0, 2), List.of(0, 3), List.of(0, 4),
-                List.of(4, 0), List.of(4, 2), List.of(3, 1), List.of(3, 3));
-        insertInto(insert, links);
-
-        conn.close();
-
-        /*
-         * Note: Since we bypassed all proper APIs to insert Documents into the database,
-         * the Doc IDs are wrong. We close and reopen the connection to fix this problem.
-         */
-        resetId();
-        conn = new DatabaseConnection(testPath);
-    }
-
-    private static void insertInto(PreparedStatement insert, List<List<Integer>> data) {
-        data.forEach(l -> {
-            IntStream.range(0, l.size()).forEach(i -> {
-                try {
-                    insert.setInt(i + 1, l.get(i));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            try {
-                insert.execute();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    private static void insertDoc(DSLContext create, List<DocumentTuple> tuple) {
-        tuple.forEach(doc -> create.insertInto(DSL.table("Document"))
-                        .values(doc.url, doc.docId, doc.lastMod, doc.size)
-                                .execute());
+    void setUp() throws SQLException, NoSuchFieldException, IllegalAccessException, URISyntaxException, MalformedURLException {
+        conn = DbUtil.initializeTestDb();
     }
 
     @AfterEach
@@ -150,11 +42,11 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void getDocFromId() throws MalformedURLException {
+    void getDocFromId() throws MalformedURLException, URISyntaxException {
         assertThrows(IllegalArgumentException.class, () -> conn.getDocFromId(1000));
         Document doc = conn.getDocFromId(0);
         assertEquals(0, doc.id());
-        assertEquals(new URL("https://www.cse.ust.hk/~kwtleung/"), doc.url());
+        assertEquals(new URI("https://www.cse.ust.hk/~kwtleung/").toURL(), doc.url());
     }
 
     @Test
@@ -218,18 +110,4 @@ class DatabaseConnectionTest {
         assertTrue(prev.isBefore(conn.getDocFromId(5).lastModified())); // checks if we have correctly updated on duplicate insert
         assertEquals(2, conn.getDocFromId(5).size()); // ditto
     }
-
-    /**
-     * The internal representation of a Document object for testing purposes only.
-     *
-     * <p>This class exists solely for testing. Please do not use it unless you are
-     * batching test updates to the document table.
-     * @param url The URL of the document
-     * @param docId The document ID of the document
-     * @param lastMod The last modified date of the document
-     * @param size The size of the document
-     */
-    private record DocumentTuple(String url, int docId, Instant lastMod, long size) {}
-
-    private record WordIndexEntry(String stem, int id, String suffix) {}
 }
