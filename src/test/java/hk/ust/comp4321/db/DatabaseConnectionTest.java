@@ -1,7 +1,6 @@
 package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
-import hk.ust.comp4321.test.DbUtil;
 import hk.ust.comp4321.test.ReflectUtil;
 import org.jooq.exception.IntegrityConstraintViolationException;
 import org.junit.jupiter.api.AfterEach;
@@ -30,7 +29,7 @@ class DatabaseConnectionTest {
 
     DatabaseConnection conn;
     @BeforeEach
-    void setUp() throws SQLException, NoSuchFieldException, IllegalAccessException, URISyntaxException, MalformedURLException {
+    void setUp() throws SQLException, NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
         conn = DbUtil.initializeTestDb();
     }
 
@@ -63,10 +62,10 @@ class DatabaseConnectionTest {
         assertDoesNotThrow(() -> conn.deleteFrequencies(1000)); // deleting nonexistent ID does not fail
         conn.deleteFrequencies(0);
         TableOperation bodyOperator = conn.bodyOperator();
-        assertTrue(bodyOperator.getFrequency(bodyOperator.getStemId("Comput"))
+        assertTrue(bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput"))
                 .stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
-        assertTrue(bodyOperator.getFrequency(bodyOperator.getStemId("Comput")).stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
-        assertEquals(2, bodyOperator.getFrequency(bodyOperator.getStemId("Comput")).size()); // 2 frequency records remaining
+        assertTrue(bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput")).stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
+        assertEquals(2, bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput")).size()); // 2 frequency records remaining
     }
 
     @Test

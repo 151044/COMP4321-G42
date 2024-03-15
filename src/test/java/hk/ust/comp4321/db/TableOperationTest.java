@@ -1,25 +1,25 @@
 package hk.ust.comp4321.db;
 
-import hk.ust.comp4321.test.DbUtil;
+import hk.ust.comp4321.api.WordInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableOperationTest {
     private DatabaseConnection conn;
     private TableOperation body;
     private TableOperation title;
     @BeforeEach
-    void setUp() throws MalformedURLException, SQLException, URISyntaxException, NoSuchFieldException, IllegalAccessException {
+    void setUp() throws IOException, SQLException, URISyntaxException, NoSuchFieldException, IllegalAccessException {
         conn = DbUtil.initializeTestDb();
         body = conn.bodyOperator();
         title = conn.titleOperator();
@@ -34,10 +34,24 @@ class TableOperationTest {
 
     @Test
     void getStems() {
+        assertEquals(4, body.getStems().size());
+        assertEquals(3, title.getStems().size());
+
+        conn.deleteFrequencies(1); // deleting should not be destructive
+        assertEquals(4, body.getStems().size());
+        assertEquals(3, title.getStems().size());
     }
 
     @Test
     void getNextId() {
+        assertEquals(4, body.getNextId());
+        assertEquals(3, title.getNextId());
+
+        body.getNextId();
+        body.getNextId();
+
+        assertEquals(7, body.getNextId());
+        assertEquals(4, title.getNextId());
     }
 
     @Test
@@ -47,26 +61,73 @@ class TableOperationTest {
     }
 
     @Test
-    void insertWord() {
+    void insertWordInfo() {
+        body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "ion"));
+        title.insertWordInfo(2, new WordInfo(0, 0, 0, 0, "ist"));
+
+        assertTrue(body.getFrequency(1).contains(new WordInfo(0, 0, 0, 0, "ion")));
+        assertTrue(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "ist")));
+        assertFalse(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "ion")));
+
+        assertDoesNotThrow(() -> body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "ion")));
+        assertDoesNotThrow(() -> title.insertWordInfo(0, new WordInfo(0, 1, 1, 1, "ing")));
     }
 
     @Test
     void getFrequency() {
+        assertTrue(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 1, "er")));
+        assertFalse(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 239040, "er")));
     }
 
     @Test
     void deleteFrequencies() {
+        body.deleteFrequencies(0);
+        assertTrue(body.getFrequency(body.getIdFromStem("comput"))
+                .stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
+        assertTrue(body.getFrequency(body.getIdFromStem("comput")).stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
+        assertEquals(2, body.getFrequency(body.getIdFromStem("comput")).size()); // 2 frequency records remaining
+
+        title.deleteFrequencies(0);
+        assertEquals(1, title.getFrequency(title.getIdFromStem("comput")).size());
     }
 
     @Test
-    void getStemId() {
+    void getIdFromStem() {
+        // existing ones
+        assertEquals(1, body.getIdFromStem("locat"));
+        assertEquals(0, title.getIdFromStem("comput"));
+
+        assertEquals(3, body.getIdFromStem("educ"));
+        assertEquals(2, title.getIdFromStem("opportun"));
+
+        // non-duplicates
+        assertEquals(-1, body.getIdFromStem("societi"));
+        assertEquals(-1, title.getIdFromStem("superl"));
     }
 
     @Test
     void getStemFromId() {
+        assertEquals("locat", body.getStemFromId(1));
+        assertEquals("locat", title.getStemFromId(1));
+
+        assertEquals("engin", body.getStemFromId(2));
+        assertEquals("opportun", title.getStemFromId(2));
+
+        assertThrows(IllegalArgumentException.class, () -> body.getStemFromId(1000));
+        assertThrows(IllegalArgumentException.class, () -> title.getStemFromId(3));
     }
 
     @Test
     void insertStem() {
+        // duplicates
+        assertEquals(0, body.insertStem("comput"));
+        assertEquals(1, title.insertStem("locat"));
+
+        assertEquals(3, body.insertStem("educ"));
+        assertEquals(2, title.insertStem("opportun"));
+
+        // non-duplicates
+        assertEquals(4, body.insertStem("societi"));
+        assertEquals(3, title.insertStem("superl"));
     }
 }

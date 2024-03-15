@@ -1,14 +1,15 @@
-package hk.ust.comp4321.test;
+package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.api.WordInfo;
-import hk.ust.comp4321.db.DatabaseConnection;
+import hk.ust.comp4321.test.ReflectUtil;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,16 +22,18 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 public class DbUtil {
     private static void resetId() throws NoSuchFieldException, IllegalAccessException {
         ReflectUtil.setStaticField("nextDocId", null, DatabaseConnection.class);
+        ReflectUtil.setStaticField("nextWordId", null, BodyTableOperation.class);
+        ReflectUtil.setStaticField("nextWordId", null, TitleTableOperation.class);
     }
 
-    private static DatabaseConnection conn;
-    public static DatabaseConnection initializeTestDb() throws SQLException, NoSuchFieldException, IllegalAccessException, URISyntaxException, MalformedURLException {
+    public static DatabaseConnection initializeTestDb() throws SQLException, NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
         Path testPath = Path.of("test.db");
+        Files.deleteIfExists(testPath);
         resetId();
-        conn = new DatabaseConnection(testPath);
+        DatabaseConnection conn = new DatabaseConnection(testPath);
         Connection connect = conn.getConnection();
         DSLContext create = DSL.using(connect);
-        List<String> tableNames = List.of("body_0", "title_0", "title_1", "body_1");
+        List<String> tableNames = List.of("body_0", "title_0", "title_1", "body_1", "body_2", "body_3", "title_2");
         tableNames.forEach(s -> create.createTableIfNotExists(s)
                 .column("docId", INTEGER)
                 .column("paragraph", INTEGER)
@@ -42,20 +45,23 @@ public class DbUtil {
         create.createTableIfNotExists("WordIndex")
                 .column("stem", VARCHAR)
                 .column("wordId", INTEGER)
-                .column("typeSuffix", VARCHAR)
+                .column("typePrefix", VARCHAR)
                 .constraints(
-                        DSL.primaryKey("wordId", "typeSuffix")
+                        DSL.primaryKey("wordId", "typePrefix")
                 )
                 .execute();
 
         List<DbUtil.WordIndexEntry> wordIndices = List.of(
-                new DbUtil.WordIndexEntry("Comput", 0, "body"),
-                new DbUtil.WordIndexEntry("Comput", 0, "title"),
-                new DbUtil.WordIndexEntry("Locat", 1, "body"),
-                new DbUtil.WordIndexEntry("Locat", 1, "title")
+                new WordIndexEntry("comput", 0, "body"),
+                new WordIndexEntry("comput", 0, "title"),
+                new WordIndexEntry("locat", 1, "body"),
+                new WordIndexEntry("locat", 1, "title"),
+                new WordIndexEntry("engin", 2, "body"),
+                new WordIndexEntry("educ", 3, "body"),
+                new WordIndexEntry("opportun", 2, "title")
         );
         wordIndices.forEach(entry -> create.insertInto(DSL.table("WordIndex"))
-                .values(entry.stem(), entry.id(), entry.suffix())
+                .values(entry.stem(), entry.id(), entry.prefix())
                 .execute());
 
         List<WordInfo> computEntries = List.of(
@@ -102,5 +108,5 @@ public class DbUtil {
         conn = new DatabaseConnection(testPath);
         return conn;
     }
-    public record WordIndexEntry(String stem, int id, String suffix) {}
+    public record WordIndexEntry(String stem, int id, String prefix) {}
 }

@@ -58,14 +58,14 @@ public abstract class TableOperation {
     }
 
     /**
-     * Inserts a word into the corresponding table of the database.
+     * Inserts word information associated with a word ID into the corresponding table of the database.
      * @param stem The ID of the stemmed word to insert
      * @param freq The word frequency record to associate with this word
      */
-    public void insertWord(int stem, WordInfo freq) {
+    public void insertWordInfo(int stem, WordInfo freq) {
         String tableName = getPrefix(stem);
         create.insertInto(DSL.table(tableName))
-                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation())
+                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.suffix())
                 .onDuplicateKeyIgnore()
                 .execute();
     }
@@ -106,7 +106,7 @@ public abstract class TableOperation {
      * @param stem The stem to retrieve the ID for
      * @return The word ID for the stem; -1 if the stem does not exist
      */
-    public int getStemId(String stem) {
+    public int getIdFromStem(String stem) {
         return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
                 .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
                 .fetch()
@@ -146,8 +146,8 @@ public abstract class TableOperation {
      * ID of this stem if it already exists
      */
     public int insertStem(String stem) {
-        return create.select().from(DSL.table("WordIndex"))
-                .where(DSL.condition("stem = '" + stem + "'"))
+        return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
+                .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
                 .fetch()
                 .stream().findFirst()
                 .map(r -> r.get(0, Integer.class))
