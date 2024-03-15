@@ -162,13 +162,12 @@ public final class Document {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (Document) obj;
         return Objects.equals(this.url, that.url) &&
-                Objects.equals(this.lastModified, that.lastModified) &&
                 this.id == that.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, lastModified, id);
+        return Objects.hash(url, id);
     }
 
     @Override
