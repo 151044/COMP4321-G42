@@ -2,10 +2,8 @@ package hk.ust.comp4321.db;
 
 import hk.ust.comp4321.api.WordInfo;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
-import java.sql.Connection;
 import java.util.List;
 
 import static org.jooq.impl.SQLDataType.INTEGER;
@@ -16,25 +14,23 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
  *
  * <p>The class defines a common set of operations on
  * a group of tables. The tables are normally based on
- * the stem, and suffixes are added to the stem by the
- * {@link #addSuffix(String)} method. The class operates
- * on all tables with the suffix as a group; this allows
+ * the ID of the stem, and prefixes`body`, followed by `body`. are added to the stem by the
+ * {@link #getPrefix(int)} method. The class operates
+ * on all tables with the prefix as a group; this allows
  * for more efficient manipulation and code reuse.
  */
 public abstract class TableOperation {
     private final DSLContext create;
 
-    TableOperation(Connection conn) {
-        create = DSL.using(conn, SQLDialect.SQLITE);
+    TableOperation(DSLContext create) {
+        this.create = create;
     }
 
     /**
-     * Transforms a table name into the suffixed form.
-     * @param stem The stem of the word to transform
-     * @return The suffixed string representing a table name in the database
+     * Gets the prefix that this type of table operates on, without underscores.
+     * @return The prefix of this kind of table operation
      */
-    public abstract String addSuffix(String stem);
-
+    public abstract String getPrefix();
     /**
      * Gets all the stems associated with this kind of database.
      * @return The list of raw table names in the database satisfying some criteria
@@ -42,47 +38,50 @@ public abstract class TableOperation {
     public abstract List<String> getStems();
 
     /**
-     * Inserts a word into the corresponding table of the database.
+     * Gets the next word ID for this prefix.
      *
-     * <p>The typical workflow is as follows:
-     * <ol>
-     *     <li>Check if the title table corresponding to the word
-     *          exists, and create it if needed.</li>
-     *     <li>Update the table with the word frequency.</li>
-     * </ol>
-     * @param stem The stemmed word to insert
+     * @implNote It is expected that subclasses will use static
+     * fields to maintain consistency for IDs. Hence, this method
+     * is abstract in order to allow for the same ID with different
+     * prefixes.
+     * @return The next word ID to allocate for this prefix
+     */
+    public abstract int getNextId();
+
+    /**
+     * Transforms a table name into the prefixed form.
+     * @param stem The word ID of the stem to transform
+     * @return The prefixed string representing a table name in the database
+     */
+    public String getPrefix(int stem) {
+        return getPrefix() + "_" + stem;
+    }
+
+    /**
+     * Inserts word information associated with a word ID into the corresponding table of the database.
+     * @param stem The ID of the stemmed word to insert
      * @param freq The word frequency record to associate with this word
      */
-    public void insertWord(String stem, WordInfo freq) {
-        String tableName = addSuffix(stem);
-        create.createTableIfNotExists(tableName)
-                .column("docId", INTEGER)
-                .column("paragraph", INTEGER)
-                .column("sentence", INTEGER)
-                .column("location", INTEGER)
-                .column("suffix", VARCHAR)
-                .constraints(
-                        DSL.primaryKey("docId", "paragraph", "sentence", "location"),
-                        DSL.foreignKey("docId").references("Document", "docId")
-                ).execute();
+    public void insertWordInfo(int stem, WordInfo freq) {
+        String tableName = getPrefix(stem);
         create.insertInto(DSL.table(tableName))
-                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation())
+                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.suffix())
                 .onDuplicateKeyIgnore()
                 .execute();
     }
     /**
      * Finds the corresponding title word frequencies of the stem in this kind of table only.
      *
-     * @param stem The stem to find the word frequencies for
+     * @param stem The word ID representing the stem to find the word frequencies for
      * @return The list of word frequencies associated with this stem, or an empty
      * list if the word does not exist in the database
      */
-    public List<WordInfo> getFrequency(String stem) {
-        if (create.meta().getTables(addSuffix(stem)).isEmpty()) {
+    public List<WordInfo> getFrequency(int stem) {
+        if (create.meta().getTables(getPrefix(stem)).isEmpty()) {
             return List.of();
         } else {
             return create.select()
-                    .from(DSL.table(addSuffix(stem)))
+                    .from(DSL.table(getPrefix(stem)))
                     .fetch()
                     .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
                             r.get(2, Integer.class), r.get(3, Integer.class), r.get(4, String.class)))
@@ -99,5 +98,75 @@ public abstract class TableOperation {
         getStems().forEach(stem -> create.delete(DSL.table(stem))
                 .where(DSL.condition("docId = " + docId))
                 .execute());
+    }
+
+    /**
+     * Retrieves the word ID for the input stem.
+     * Returns -1 if no such stem exists in the database with the correct prefix type.
+     * @param stem The stem to retrieve the ID for
+     * @return The word ID for the stem; -1 if the stem does not exist
+     */
+    public int getIdFromStem(String stem) {
+        return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
+                .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
+                .fetch()
+                .stream().findFirst() // This does not use their map since I do not know what it does on an empty list
+                .map(r -> r.get(0, Integer.class))
+                .orElse(-1);
+    }
+
+    /**
+     * Gets the stem corresponding to the word ID.
+     * @throws IllegalArgumentException If the word ID does not exist with this type
+     * @param id The word ID to lookup
+     * @return The corresponding stem
+     */
+    public String getStemFromId(int id) {
+        return create.select(DSL.field("stem")).from(DSL.table("WordIndex"))
+                .where(DSL.condition("wordId = " + id).and("typePrefix = '" + getPrefix() + "'"))
+                .fetch()
+                .stream().findFirst()
+                .map(r -> r.get(0, String.class))
+                .orElseThrow(() -> new IllegalArgumentException("No such word ID: " + id));
+    }
+
+    /**
+     * Inserts the stem into the database if it does not exist.
+     * Does nothing if the stem already exists.
+     *
+     * <p>The typical workflow is as follows:
+     * <ol>
+     *     <li>Check if the word ID corresponding to the word
+     *          exists, and allocates a new one if needed.</li>
+     *     <li>Update the table with the word frequency.</li>
+     *     <li>If the table does not exist, create it.</li>
+     * </ol>
+     * @param stem The stem to attempt to insert into the database
+     * @return The word ID of the inserted stem; or the current word
+     * ID of this stem if it already exists
+     */
+    public int insertStem(String stem) {
+        return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
+                .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
+                .fetch()
+                .stream().findFirst()
+                .map(r -> r.get(0, Integer.class))
+                .orElseGet(() -> {
+                    int next = getNextId();
+                    create.insertInto(DSL.table("WordIndex"))
+                            .values(stem, next, getPrefix())
+                            .execute();
+                    create.createTableIfNotExists(getPrefix(next))
+                            .column("docId", INTEGER)
+                            .column("paragraph", INTEGER)
+                            .column("sentence", INTEGER)
+                            .column("location", INTEGER)
+                            .column("prefix", VARCHAR)
+                            .constraints(
+                                    DSL.primaryKey("docId", "paragraph", "sentence", "location"),
+                                    DSL.foreignKey("docId").references("Document", "docId")
+                            ).execute();
+                    return next;
+                });
     }
 }

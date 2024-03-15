@@ -1,33 +1,45 @@
 package hk.ust.comp4321.db;
 
+import org.jooq.DSLContext;
 import org.jooq.Named;
 import org.jooq.impl.DSL;
 
-import java.sql.Connection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal class for operating on tables which represent
  * a word in the body of a document.
  *
- * <p>In particular, the class appends _body to each stem.
+ * <p>In particular, the class prepends body_ to each stem.
  */
 class BodyTableOperation extends TableOperation {
-    private final Connection conn;
+    private final DSLContext create;
+    private static AtomicInteger nextWordId = null;
 
-    BodyTableOperation(Connection conn) {
-        super(conn);
-        this.conn = conn;
+    BodyTableOperation(DSLContext create) {
+        super(create);
+        this.create = create;
+        if (nextWordId == null) {
+            nextWordId = new AtomicInteger(
+                    create.fetchCount(DSL.table("WordIndex"),
+                            DSL.condition("typePrefix = '" + getPrefix() + "'")));
+        }
     }
 
     @Override
-    public String addSuffix(String stem) {
-        return stem + "_body";
+    public String getPrefix() {
+        return "body";
     }
 
     @Override
     public List<String> getStems() {
-        return DSL.using(conn).meta().getTables().stream().map(Named::getName)
-                .filter(n -> n.endsWith("_body")).toList();
+        return create.meta().getTables().stream().map(Named::getName)
+                .filter(n -> n.startsWith("body_")).toList();
+    }
+
+    @Override
+    public int getNextId() {
+        return nextWordId.getAndIncrement();
     }
 }
