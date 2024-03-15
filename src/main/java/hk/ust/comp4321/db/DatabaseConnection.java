@@ -18,8 +18,8 @@ import static org.jooq.impl.SQLDataType.*;
 /**
  * Represents the connection to the underlying database.
  *
- * <p>Currently, the database is organized into three different types of tables -
- * the Document table, the Document Link table and Word (title) tables.
+ * <p>Currently, the database is organized into four different types of tables -
+ * the Document table, the Document Link table, the Word Index table and Word (title) tables.
  *
  * <p>Please see
  * <a href="https://github.com/151044/COMP4321-G42/tree/main/docs/schema.md">
@@ -32,11 +32,12 @@ import static org.jooq.impl.SQLDataType.*;
  * If you need to implement something, please see the current implemented examples.
  *
  * The jOOQ documentation is here: https://www.jooq.org/doc/3.19/manual/, though it
- * is a very dense read.
+ * is a very dense read. You might have better luck finding the equivalent SQL then
+ * Googling the correct syntax.
  */
 public class DatabaseConnection implements AutoCloseable {
     private final Connection conn;
-    private static AtomicInteger nextId = null;
+    private static AtomicInteger nextDocId = null;
     private final DSLContext create;
 
     /**
@@ -66,8 +67,17 @@ public class DatabaseConnection implements AutoCloseable {
                 )
                 .execute();
 
-        if (nextId == null) {
-            nextId = new AtomicInteger(create.fetchCount(DSL.table("Document")));
+        create.createTableIfNotExists("WordIndex")
+                .column("stem", VARCHAR)
+                .column("wordId", INTEGER)
+                .column("typePrefix", VARCHAR)
+                .constraints(
+                        DSL.primaryKey("wordId", "typePrefix")
+                )
+                .execute();
+
+        if (nextDocId == null) {
+            nextDocId = new AtomicInteger(create.fetchCount(DSL.table("Document")));
         }
     }
 
@@ -182,7 +192,7 @@ public class DatabaseConnection implements AutoCloseable {
      *         with document bodies
      */
     public TableOperation bodyOperator() {
-        return new BodyTableOperation(conn);
+        return new BodyTableOperation(create);
     }
 
     /**
@@ -192,7 +202,7 @@ public class DatabaseConnection implements AutoCloseable {
      *         with document titles
      */
     public TableOperation titleOperator() {
-        return new TitleTableOperation(conn);
+        return new TitleTableOperation(create);
     }
 
     /**
@@ -205,11 +215,11 @@ public class DatabaseConnection implements AutoCloseable {
      * @throws IllegalStateException If no instances of this class has been created yet
      */
     public static int nextDocId() {
-        if (nextId == null) {
+        if (nextDocId == null) {
             throw new IllegalStateException("No database connection initialized." +
                     "Please create an instance of DatabaseConnection first.");
         }
-        return nextId.getAndIncrement();
+        return nextDocId.getAndIncrement();
     }
 
     /**
