@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableOperationTest {
     private DatabaseConnection conn;
