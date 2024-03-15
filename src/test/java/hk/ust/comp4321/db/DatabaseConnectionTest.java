@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -30,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DatabaseConnectionTest {
     private static void resetId() throws NoSuchFieldException, IllegalAccessException {
-        ReflectUtil.setStaticField("nextId", null, DatabaseConnection.class);
+        ReflectUtil.setStaticField("nextDocId", null, DatabaseConnection.class);
     }
 
     private void connectEmpty() throws SQLException {
@@ -45,7 +46,7 @@ class DatabaseConnectionTest {
         conn = new DatabaseConnection(testPath);
         Connection connect = conn.getConnection();
         DSLContext create = DSL.using(connect);
-        List<String> tableNames = List.of("Comput_body", "Comput_title", "Locat_title", "Locat_body");
+        List<String> tableNames = List.of("body_0", "title_0", "title_1", "body_1");
         tableNames.forEach(s -> create.createTableIfNotExists(s)
                         .column("docId", INTEGER)
                         .column("paragraph", INTEGER)
@@ -53,6 +54,25 @@ class DatabaseConnectionTest {
                         .column("location", INTEGER)
                         .column("suffix", VARCHAR)
                         .execute());
+
+        create.createTableIfNotExists("WordIndex")
+                .column("stem", VARCHAR)
+                .column("wordId", INTEGER)
+                .column("typeSuffix", VARCHAR)
+                .constraints(
+                        DSL.primaryKey("wordId", "typeSuffix")
+                )
+                .execute();
+
+        List<WordIndexEntry> wordIndices = List.of(
+                new WordIndexEntry("Comput", 0, "body"),
+                new WordIndexEntry("Comput", 0, "title"),
+                new WordIndexEntry("Locat", 1, "body"),
+                new WordIndexEntry("Locat", 1, "title")
+        );
+        wordIndices.forEach(entry -> create.insertInto(DSL.table("WordIndex"))
+                .values(entry.stem(), entry.id(), entry.suffix())
+                .execute());
 
         PreparedStatement insert;
 
@@ -62,14 +82,14 @@ class DatabaseConnectionTest {
                 new WordInfo(0, 99, 2, 3, "ed"),
                 new WordInfo(1, 3, 2, 1, "es"),
                 new WordInfo(1, 3270972, 2, 1, "er"));
-        computEntries.forEach(info -> create.insertInto(DSL.table("Comput_body"))
+        computEntries.forEach(info -> create.insertInto(DSL.table("body_0"))
                 .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
                 .execute());
 
         List<WordInfo> computTitles = List.of(
                 new WordInfo(0, 1, 1, 1, "ing"),
                 new WordInfo(1, 1, 1, 1, "ers"));
-        computTitles.forEach(info -> create.insertInto(DSL.table("Comput_title"))
+        computTitles.forEach(info -> create.insertInto(DSL.table("title_0"))
                 .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
                 .execute());
 
@@ -81,7 +101,7 @@ class DatabaseConnectionTest {
                 new DocumentTuple("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()", 4, Instant.ofEpochMilli(93690504), 2639425)
         );
 
-        insertDoc(DSL.using(conn.getConnection()), docs);
+        insertDoc(create, docs);
 
         insert = connect.prepareStatement("INSERT INTO DocumentLink VALUES (?, ?)");
 
@@ -150,9 +170,11 @@ class DatabaseConnectionTest {
     void deleteFrequencies() {
         assertDoesNotThrow(() -> conn.deleteFrequencies(1000)); // deleting nonexistent ID does not fail
         conn.deleteFrequencies(0);
-        assertTrue(conn.bodyOperator().getFrequency("Comput").stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
-        assertTrue(conn.titleOperator().getFrequency("Comput").stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
-        assertEquals(2, conn.bodyOperator().getFrequency("Comput").size()); // 2 frequency records remaining
+        TableOperation bodyOperator = conn.bodyOperator();
+        assertTrue(bodyOperator.getFrequency(bodyOperator.getStemId("Comput"))
+                .stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
+        assertTrue(bodyOperator.getFrequency(bodyOperator.getStemId("Comput")).stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
+        assertEquals(2, bodyOperator.getFrequency(bodyOperator.getStemId("Comput")).size()); // 2 frequency records remaining
     }
 
     @Test
@@ -208,4 +230,6 @@ class DatabaseConnectionTest {
      * @param size The size of the document
      */
     private record DocumentTuple(String url, int docId, Instant lastMod, long size) {}
+
+    private record WordIndexEntry(String stem, int id, String suffix) {}
 }
