@@ -13,12 +13,18 @@
 | docId      | Integer   | True           |
 | childId    | Integer   | True           |
 
-## Word Table(s)
-Note: The name of each (stemmed) word is the table name, followed by `_body`.
-For example, one such table might be `Comput_body`.
+## Word Index (WordIndex)
+| Field Name | Data Type        | Is Primary Key |
+|------------|------------------|----------------|
+| stem       | Varchar (String) | False          |
+| wordId     | Integer          | True           |
 
-Tables for stems in titles are named `{stem}_title`.
-The corresponding example to the one above is `Comput_title`.
+## Word Table(s)
+Note: The name of each table is the word ID, followed by `_body`.
+For example, one such table might be `1_body`.
+
+Tables for stems in titles are named `{wordId}_title`.
+The corresponding example to the one above is `1_title`.
 
 | Field Name | Data Type        | Is Primary Key |
 |------------|------------------|----------------|
