@@ -18,14 +18,14 @@
 |------------|------------------|----------------|
 | stem       | Varchar (String) | False          |
 | wordId     | Integer          | True           |
-| typeSuffix | Varchar (String) | True           |
+| typePrefix | Varchar (String) | True           |
 
 ## Word Table(s)
-Note: The name of each table is the word ID, followed by `_body`.
-For example, one such table might be `1_body`.
+Note: Tables for stems in the body are named `body_{wordId}`.
+For example, one such table might be `body_1`.
 
-Tables for stems in titles are named `{wordId}_title`.
-The corresponding example to the one above is `1_title`.
+Tables for stems in titles are named `title_{wordId}`.
+The corresponding example to the one above is `title_1`.
 
 | Field Name | Data Type        | Is Primary Key |
 |------------|------------------|----------------|
