@@ -18,6 +18,7 @@
 |------------|------------------|----------------|
 | stem       | Varchar (String) | False          |
 | wordId     | Integer          | True           |
+| typeSuffix | Varchar (String) | True           |
 
 ## Word Table(s)
 Note: The name of each table is the word ID, followed by `_body`.
