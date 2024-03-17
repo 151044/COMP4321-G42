@@ -27,7 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Build with Gradle
+      - name: Build Main Jar with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: dist
@@ -38,4 +38,7 @@ jobs:
           automatic_release_tag: "latest"
           prerelease: true
           title: "Latest Executable"
-          files: ./build/libs/COMP4321-G42-1.0.jar
+          files: |
+            ./build/libs/COMP4321-G42-1.0.jar
+            ./build/libs/COMP4321-G42-Visualizer-1.0.jar
+                
