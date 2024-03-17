@@ -16,7 +16,7 @@ The Porter stemmer and the stopword list are translated from the equivalent Pyth
 This application requires Java 17 or later.
 
 ### Code Execution
-Create a runnable JAR as follows:
+For the main project, create a runnable JAR as follows:
 
 For Mac/Unix:
 ```
@@ -33,4 +33,23 @@ The runnable application JAR can be found under `build/libs`.
 If double-clicking on the JAR does not bring up anything, your Java environment may be misconfigured. Try to run it from the command line in the `build/libs` directory:
 ```
 java -jar COMP4321-G42-1.0.jar
+```
+
+For the visualizer, create
+
+For Mac/Unix:
+```
+./gradlew dist-visualizer
+```
+
+For Windows:
+```
+.\gradlew.bat dist-visualizer
+```
+
+The runnable application JAR can be found under `build/libs`.
+
+If double-clicking on the JAR does not bring up anything, your Java environment may be misconfigured. Try to run it from the command line in the `build/libs` directory:
+```
+java -jar COMP4321-G42-Visualizer-1.0.jar
 ```
