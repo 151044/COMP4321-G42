@@ -21,4 +21,6 @@ public class StopWord {
             throw new RuntimeException(e);
         }
     }
+
+    private StopWord() {}
 }
