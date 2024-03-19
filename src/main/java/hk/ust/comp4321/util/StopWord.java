@@ -10,17 +10,19 @@ import java.util.stream.Collectors;
 public class StopWord {
     private static Set<String> stopWords;
 
-    public static boolean isStopWord(String str) {
-        return stopWords.contains(str);
-    }
-
     static {
         try {
-            stopWords = new HashSet<>(Files.readAllLines(Path.of("data/stopwords.txt")));
+            stopWords = new HashSet<>(Files.readAllLines(Path.of("data/nltk_stopwords.txt")));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public static boolean isStopWord(String str) {
+        return stopWords.contains(str);
+    }
+
+
 
     private StopWord() {}
 }
