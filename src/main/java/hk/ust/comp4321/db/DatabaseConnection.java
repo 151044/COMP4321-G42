@@ -110,6 +110,34 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Retrieves a document by its URL.
+     *
+     * <p>Note: The word frequencies and children of this document have not been loaded.
+     *
+     * @param url The corresponding URL of a document for
+     * @throws IllegalArgumentException If the URL is invalid
+     * @return The document associated with this URL.
+     */
+    public Document getDocFromUrl(URL url) {
+        return create.select()
+                .from(DSL.table("Document"))
+                .where(
+                        DSL.condition(DSL.field(DSL.name("url")).eq(url.toString()))
+                ).fetch().stream().findFirst()
+                .map(r -> {
+                    try {
+                        return new Document(new URL(r.get(0, String.class)),
+                                r.get(1, Integer.class),
+                                r.get(2, Instant.class),
+                                r.get(3, Long.class));
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .orElseThrow(() -> new IllegalArgumentException("No such URL: " + url));
+    }
+
+    /**
      * Inserts a document into the database, or updates its last modified time
      * if it exists.
      *
