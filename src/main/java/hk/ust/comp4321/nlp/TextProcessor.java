@@ -68,4 +68,14 @@ public class TextProcessor {
     public static TextProcessor getInstance() {
         return INSTANCE;
     }
+
+    public static boolean allSymbols(String text) {
+        List<Character> characters = text.chars().mapToObj(c -> (char)c).toList();
+        for (char ch: characters) {
+            if (Character.isDigit(ch) || Character.isLetter(ch)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
