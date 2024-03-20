@@ -22,8 +22,8 @@ class TitleTableOperation extends TableOperation {
         this.create = create;
         if (nextWordId == null) {
             nextWordId = new AtomicInteger(
-                    create.fetchCount(DSL.table("WordIndex"),
-                            DSL.condition("typePrefix = '" + getPrefix() + "'")));
+                    create.fetchCount(DSL.table(DSL.name("WordIndex")),
+                            DSL.condition(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))));
         }
     }
 
