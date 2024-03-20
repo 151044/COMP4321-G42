@@ -16,7 +16,7 @@
 /*
  * Note: Since the NLTK code is Apache, this file is also Apache Licensed.
  */
-package hk.ust.comp4321.util;
+package hk.ust.comp4321.nlp;
 
 import java.util.ArrayList;
 import java.util.HashMap;
