@@ -65,7 +65,7 @@ public final class Document {
      * Retrieves the list of words in this document by connecting and parsing the webpage.
      * @throws IOException If connecting or reading from the URL fails
      */
-    public void retrieve(Jsoup soup) throws IOException {
+    public void retrieve() throws IOException {
         isLoaded = true;
     }
 
