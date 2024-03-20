@@ -5,22 +5,19 @@ import hk.ust.comp4321.db.TableOperation;
 import hk.ust.comp4321.nlp.*;
 import hk.ust.comp4321.util.StopWord;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * A class representing a single document, indexed by its URL.
  *
  * <p> Note that the document is lazy - it does not actually load the words, their
- * associated frequencies, or children links unless {@link #retrieve()} or
+ * associated frequencies, or children links unless {@link #retrieveFromWeb()} or
  * {@link #retrieveFromDatabase(DatabaseConnection)} is called.
  */
 public final class Document {
@@ -92,7 +89,62 @@ public final class Document {
      * Retrieves the list of words in this document by connecting and parsing the webpage.
      * @throws IOException If connecting or reading from the URL fails
      */
-    public void retrieve() throws IOException {
+    public void retrieveFromWeb() throws IOException {
+        // Connect to the URL
+        org.jsoup.nodes.Document doc = Jsoup.connect(this.url.toString()).get();
+
+        // Load text processor
+        TextProcessor textProcessor = TextProcessor.getInstance();
+
+        // Extract title sections
+        // Note: There can be only one title per HTMl file (i.e., one "paragraph" only)
+        List<String> titleSentences = textProcessor.toSentence(doc.select("title").text());
+        // Sentence level
+        for (int j = 0; j < titleSentences.size(); ++j) {
+            // Note: Make every word in lowercase
+            List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j)).stream().map(String::toLowerCase).toList();
+            List<String> stemmedTitleWords = rawTitleWords.stream().map(NltkPorter::stem).toList();
+            // Word level
+            for (int k = 0; k < rawTitleWords.size(); ++k) {
+                String rawWord = rawTitleWords.get(k);
+                String stemmedWord = stemmedTitleWords.get(k);
+                if (!StopWord.isStopWord(stemmedWord)) {
+                    // Extract suffix by removing the stem from the raw word
+                    String suffix = rawWord.replace(stemmedWord, "");
+                    this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, suffix));
+                }
+            }
+        }
+
+        // Extract body sections
+        List<String> bodySections = doc.select("body").get(0).children().stream().map(Element::text).toList();
+        // Paragraph level
+        for (int i = 0; i < bodySections.size(); ++i) {
+            List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
+            // Sentence level
+            for (int j = 0; j < bodySentences.size(); ++j) {
+                List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j)).stream().map(String::toLowerCase).toList();
+                List<String> stemmedBodyWords = rawBodyWords.stream().map(NltkPorter::stem).toList();
+                // Word level
+                for (int k = 0; k < rawBodyWords.size(); ++k) {
+                    String rawWord = rawBodyWords.get(k);
+                    String stemmedWord = stemmedBodyWords.get(k);
+                    if (!StopWord.isStopWord(stemmedWord)) {
+                        // Extract suffix by removing the stem from the raw word
+                        String suffix = rawWord.replace(stemmedWord, "");
+                        this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, suffix));
+                    }
+                }
+            }
+        }
+
+        // Extract links
+        Elements links = doc.select("a[href]");
+        for (Element link : links) {
+            this.children.add(new URL(link.attr("abs:href")));
+        }
+
+        // Document is completely loaded
         isLoaded = true;
     }
 
@@ -160,7 +212,7 @@ public final class Document {
 
     /**
      * Checks if the list of words of this document are loaded.
-     * Since the document is lazy, only calls to {@link #retrieve()} or
+     * Since the document is lazy, only calls to {@link #retrieveFromWeb()} or
      * {@link #retrieveFromDatabase(DatabaseConnection)} will set this to true.
      * @return True if the list of words are loaded, false otherwise
      */
