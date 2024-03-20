@@ -57,7 +57,7 @@ public final class Document {
      * @param conn The database connection to use
      * @throws SQLException If there is an SQL error
      */
-    public void retrieve(DatabaseConnection conn) throws SQLException {
+    public void retrieveFromDataBase(DatabaseConnection conn) throws SQLException {
         isLoaded = true;
     }
 
