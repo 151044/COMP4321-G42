@@ -57,8 +57,35 @@ public final class Document {
      * @param conn The database connection to use
      * @throws SQLException If there is an SQL error
      */
-    public void retrieveFromDataBase(DatabaseConnection conn) throws SQLException {
-        isLoaded = true;
+    public void retrieveFromDatabase(DatabaseConnection conn) throws SQLException {
+        // Load titleFrequencies
+        TableOperation titleTable = conn.titleOperator();
+        List<Integer> titleStemIds = titleTable.getStemIds();
+
+        for (int stemId: titleStemIds) {
+            List<WordInfo> titleInfoList = titleTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            String stem = titleTable.getStemFromId(stemId);
+            for (WordInfo wordInfo: titleInfoList) {
+                this.titleFrequencies.put(stem, wordInfo);
+            }
+        }
+
+        // Load bodyFrequencies
+        TableOperation bodyTable = conn.bodyOperator();
+        List<Integer> bodyStemIds = bodyTable.getStemIds();
+        for (int stemId: bodyStemIds) {
+            List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            String stem = bodyTable.getStemFromId(stemId);
+            for (WordInfo wordInfo: bodyInfoList) {
+                this.titleFrequencies.put(stem, wordInfo);
+            }
+        }
+
+        // Load child documents
+        this.children.addAll(conn.children(this.id).stream().map(Document::url).toList());
+
+        // Document is completely loaded
+        this.isLoaded = true;
     }
 
     /**
