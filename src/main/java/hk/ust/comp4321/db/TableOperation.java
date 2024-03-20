@@ -64,7 +64,7 @@ public abstract class TableOperation {
      */
     public void insertWordInfo(int stem, WordInfo freq) {
         String tableName = getPrefix(stem);
-        create.insertInto(DSL.table(tableName))
+        create.insertInto(DSL.table(DSL.name(tableName)))
                 .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.suffix())
                 .onDuplicateKeyIgnore()
                 .execute();
@@ -81,7 +81,7 @@ public abstract class TableOperation {
             return List.of();
         } else {
             return create.select()
-                    .from(DSL.table(getPrefix(stem)))
+                    .from(DSL.table(DSL.name(getPrefix(stem))))
                     .fetch()
                     .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
                             r.get(2, Integer.class), r.get(3, Integer.class), r.get(4, String.class)))
@@ -96,7 +96,7 @@ public abstract class TableOperation {
      */
     public void deleteFrequencies(int docId) {
         getStems().forEach(stem -> create.delete(DSL.table(stem))
-                .where(DSL.condition("docId = " + docId))
+                .where(DSL.condition(DSL.field(DSL.name("docId")).eq(docId)))
                 .execute());
     }
 
@@ -107,8 +107,9 @@ public abstract class TableOperation {
      * @return The word ID for the stem; -1 if the stem does not exist
      */
     public int getIdFromStem(String stem) {
-        return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
-                .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
+        return create.select(DSL.field(DSL.name("wordId"))).from(DSL.table(DSL.name("WordIndex")))
+                .where(DSL.condition(DSL.field(DSL.name("stem")).eq(stem))
+                        .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix())))
                 .fetch()
                 .stream().findFirst() // This does not use their map since I do not know what it does on an empty list
                 .map(r -> r.get(0, Integer.class))
@@ -122,8 +123,9 @@ public abstract class TableOperation {
      * @return The corresponding stem
      */
     public String getStemFromId(int id) {
-        return create.select(DSL.field("stem")).from(DSL.table("WordIndex"))
-                .where(DSL.condition("wordId = " + id).and("typePrefix = '" + getPrefix() + "'"))
+        return create.select(DSL.field(DSL.name("stem"))).from(DSL.table(DSL.name("WordIndex")))
+                .where(DSL.condition(DSL.field(DSL.name("wordId")).eq(id))
+                        .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix())))
                 .fetch()
                 .stream().findFirst()
                 .map(r -> r.get(0, String.class))
@@ -146,14 +148,15 @@ public abstract class TableOperation {
      * ID of this stem if it already exists
      */
     public int insertStem(String stem) {
-        return create.select(DSL.field("wordId")).from(DSL.table("WordIndex"))
-                .where(DSL.condition("stem = '" + stem + "'").and("typePrefix = '" + getPrefix() + "'"))
+        return create.select(DSL.field(DSL.name("wordId"))).from(DSL.table(DSL.name("WordIndex")))
+                .where(DSL.condition(DSL.field(DSL.name("stem")).eq(stem)
+                        .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))))
                 .fetch()
                 .stream().findFirst()
                 .map(r -> r.get(0, Integer.class))
                 .orElseGet(() -> {
                     int next = getNextId();
-                    create.insertInto(DSL.table("WordIndex"))
+                    create.insertInto(DSL.table(DSL.name("WordIndex")))
                             .values(stem, next, getPrefix())
                             .execute();
                     create.createTableIfNotExists(getPrefix(next))
