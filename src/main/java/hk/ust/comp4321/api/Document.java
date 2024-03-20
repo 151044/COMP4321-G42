@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
  *
  * <p> Note that the document is lazy - it does not actually load the words, their
  * associated frequencies, or children links unless {@link #retrieve()} or
- * {@link #retrieve(DatabaseConnection)} is called.
+ * {@link #retrieveFromDataBase(DatabaseConnection)} is called.
  */
 public final class Document {
     private final URL url;
@@ -89,11 +89,8 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
-        // Load all child documents
-        List<Document> childDocuments = conn.children(this.id);
-
         // For each child links, find its corresponding child document and extract its document ID and then insert link to the database
-        this.children.forEach(u -> conn.insertLink(this.id, childDocuments.stream().filter(cd -> cd.url().toString().equals(u.toString())).toList().get(0).id()));
+        this.children.forEach(u -> conn.insertLink(this.id, conn.getDocFromUrl(u).id()));
     }
 
     /**
@@ -123,7 +120,7 @@ public final class Document {
     /**
      * Checks if the list of words of this document are loaded.
      * Since the document is lazy, only calls to {@link #retrieve()} or
-     * {@link #retrieve(DatabaseConnection)} will set this to true.
+     * {@link #retrieveFromDataBase(DatabaseConnection)} will set this to true.
      * @return True if the list of words are loaded, false otherwise
      */
     public boolean isLoaded() {
