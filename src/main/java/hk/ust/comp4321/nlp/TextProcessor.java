@@ -69,6 +69,11 @@ public class TextProcessor {
         return INSTANCE;
     }
 
+    /**
+     * Check if all the characters in a text are symbols (not letters nor digits)
+     * @param text As the name suggests
+     * @return A boolean value
+     */
     public static boolean allSymbols(String text) {
         List<Character> characters = text.chars().mapToObj(c -> (char)c).toList();
         for (char ch: characters) {
