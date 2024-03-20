@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
  *
  * <p> Note that the document is lazy - it does not actually load the words, their
  * associated frequencies, or children links unless {@link #retrieve()} or
- * {@link #retrieveFromDataBase(DatabaseConnection)} is called.
+ * {@link #retrieveFromDatabase(DatabaseConnection)} is called.
  */
 public final class Document {
     private final URL url;
@@ -147,7 +147,7 @@ public final class Document {
     /**
      * Checks if the list of words of this document are loaded.
      * Since the document is lazy, only calls to {@link #retrieve()} or
-     * {@link #retrieveFromDataBase(DatabaseConnection)} will set this to true.
+     * {@link #retrieveFromDatabase(DatabaseConnection)} will set this to true.
      * @return True if the list of words are loaded, false otherwise
      */
     public boolean isLoaded() {
