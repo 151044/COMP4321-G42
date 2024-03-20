@@ -89,6 +89,11 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
+        // Load all child documents
+        List<Document> childDocuments = conn.children(this.id);
+
+        // For each child links, find its corresponding child document and extract its document ID and then insert link to the database
+        this.children.forEach(u -> conn.insertLink(this.id, childDocuments.stream().filter(cd -> cd.url().toString().equals(u.toString())).toList().get(0).id()));
     }
 
     /**
