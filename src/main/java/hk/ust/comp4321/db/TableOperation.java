@@ -32,10 +32,18 @@ public abstract class TableOperation {
      */
     public abstract String getPrefix();
     /**
-     * Gets all the stems associated with this kind of database.
+     * Gets all the table names associated with this kind of database.
      * @return The list of raw table names in the database satisfying some criteria
      */
-    public abstract List<String> getStems();
+    public abstract List<String> getTableNames();
+
+    /**
+     * Gets the word IDs associated with this prefix.
+     * @return The list of word IDs with the prefix
+     */
+    public List<Integer> getStemIds() {
+        return getTableNames().stream().map(s -> s.replace(getPrefix(), "")).map(Integer::parseInt).toList();
+    }
 
     /**
      * Gets the next word ID for this prefix.
@@ -95,7 +103,7 @@ public abstract class TableOperation {
      * @param docId The document IDs to drop
      */
     public void deleteFrequencies(int docId) {
-        getStems().forEach(stem -> create.delete(DSL.table(stem))
+        getTableNames().forEach(stem -> create.delete(DSL.table(stem))
                 .where(DSL.condition(DSL.field(DSL.name("docId")).eq(docId)))
                 .execute());
     }
