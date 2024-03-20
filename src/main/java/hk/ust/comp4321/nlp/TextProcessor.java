@@ -42,6 +42,9 @@ public class TextProcessor {
 
     /**
      * Converts a paragraph (or a series of sentences) into a list of sentences.
+     *
+     * <p>The tokenizer considers punctuation as individual tokens, but hyphenated
+     * words are considered a single token.
      * @param text The paragraph to parse into sentences
      * @return A List of Strings where each element represents a sentence
      */
