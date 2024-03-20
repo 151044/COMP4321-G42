@@ -103,6 +103,20 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeWords(DatabaseConnection conn) {
+        // Get access to title table and body table
+        TableOperation titleTable = conn.titleOperator();
+        TableOperation bodyTable = conn.bodyOperator();
+
+        // For every pair of stem (String) and frequency (WordInfo), get a stem ID and insert the ID and the frequency into the database
+        for (String titleStem: titleFrequencies.keySet()) {
+            int stemId = titleTable.insertStem(titleStem);
+            titleTable.insertWordInfo(stemId, titleFrequencies.get(titleStem));
+        }
+        for (String bodyStem: bodyFrequencies.keySet()) {
+            int stemId = bodyTable.insertStem(bodyStem);
+            bodyTable.insertWordInfo(stemId, bodyFrequencies.get(bodyStem));
+        }
+
         // Insert the document into the database
         conn.insertDocument(this);
     }
