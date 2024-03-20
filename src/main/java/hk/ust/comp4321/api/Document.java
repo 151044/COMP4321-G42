@@ -1,19 +1,26 @@
 package hk.ust.comp4321.api;
 
 import hk.ust.comp4321.db.DatabaseConnection;
+import hk.ust.comp4321.db.TableOperation;
+import hk.ust.comp4321.nlp.*;
+import hk.ust.comp4321.util.StopWord;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A class representing a single document, indexed by its URL.
  *
  * <p> Note that the document is lazy - it does not actually load the words, their
- * associated frequencies, or children links unless {@link #retrieve(Jsoup)} or
+ * associated frequencies, or children links unless {@link #retrieve()} or
  * {@link #retrieve(DatabaseConnection)} is called.
  */
 public final class Document {
@@ -56,7 +63,6 @@ public final class Document {
 
     /**
      * Retrieves the list of words in this document by connecting and parsing the webpage.
-     * @param soup The JSoup instance to use
      * @throws IOException If connecting or reading from the URL fails
      */
     public void retrieve(Jsoup soup) throws IOException {
@@ -70,7 +76,8 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeWords(DatabaseConnection conn) {
-
+        // Insert the document into the database
+        conn.insertDocument(this);
     }
 
     /**
@@ -82,7 +89,6 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
-
     }
 
     /**
@@ -105,13 +111,13 @@ public final class Document {
      * Gets the document ID.
      * @return The ID of this document
      */
-    public long id() {
+    public int id() {
         return id;
     }
 
     /**
-     * Checks if the list of words of this document are loaded. Since
-     * the document is lazy, only calls to {@link #retrieve(Jsoup)} or
+     * Checks if the list of words of this document are loaded.
+     * Since the document is lazy, only calls to {@link #retrieve()} or
      * {@link #retrieve(DatabaseConnection)} will set this to true.
      * @return True if the list of words are loaded, false otherwise
      */
@@ -140,7 +146,7 @@ public final class Document {
     }
 
     /**
-     * Gets the links discovered in this document.
+     * Gets the documents discovered in this document.
      * If {@link #isLoaded()} returns false, this returns an empty list instead.
      * @return The list of discovered URLs, or an empty list if the document is not loaded
      */
