@@ -94,7 +94,7 @@ public class DatabaseConnection implements AutoCloseable {
         return create.select()
                 .from(DSL.table("Document"))
                 .where(
-                        DSL.condition("docId = " + docId)
+                        DSL.condition(DSL.field(DSL.name("docId")).eq(docId))
                 ).fetch().stream().findFirst()
                 .map(r -> {
                     try {
@@ -146,8 +146,8 @@ public class DatabaseConnection implements AutoCloseable {
      * @return A list of child documents for the specified document ID
      */
     public List<Document> children(int docId) {
-        return create.select(DSL.field("childId")).from(DSL.table("DocumentLink"))
-                .where(DSL.condition("docId = " + docId))
+        return create.select(DSL.field(DSL.name("childId"))).from(DSL.table(DSL.name("DocumentLink")))
+                .where(DSL.condition(DSL.field(DSL.name("docId")).eq(docId)))
                 .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
     }
 
@@ -157,8 +157,8 @@ public class DatabaseConnection implements AutoCloseable {
      * @return A list of parent documents for the specified document ID
      */
     public List<Document> parents(int docId) {
-        return create.select(DSL.field("docId")).from(DSL.table("DocumentLink"))
-                .where(DSL.condition("childId = " + docId))
+        return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("DocumentLink")))
+                .where(DSL.condition(DSL.field(DSL.name("childId")).eq(docId)))
                 .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
     }
 
@@ -181,7 +181,7 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public void deleteChildren(int docId) {
         create.delete(DSL.table("DocumentLink"))
-                .where(DSL.condition("docId = " + docId))
+                .where(DSL.condition(DSL.field(DSL.name("docId")).eq(docId)))
                 .execute();
     }
 
