@@ -33,7 +33,7 @@ class BodyTableOperation extends TableOperation {
     }
 
     @Override
-    public List<String> getStems() {
+    public List<String> getTableNames() {
         return create.meta().getTables().stream().map(Named::getName)
                 .filter(n -> n.startsWith("body_")).toList();
     }
