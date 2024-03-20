@@ -7,6 +7,7 @@ Our libraries and dependencies include:
 - Jsoup 1.17.2 (HTML Parser);
 - jOOQ 3.19 (SQL Java library);
 - SLF4J Simple 2.0.12 (Logging service);
+- OpenNLP 2.3.2 (Tokenization Support);
 - SQLite-JDBC 3.45.1.0 (Database); and
 - SQLite 3.45.1.
 
