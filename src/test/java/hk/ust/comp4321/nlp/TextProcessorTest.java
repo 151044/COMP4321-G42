@@ -34,7 +34,6 @@ class TextProcessorTest {
                 " (around 1845-1849) showed an increasing amount of polyphony.",
                 "The sea was blue, the sky was blue, and you are still blue.",
                 "This concept is quasi-connected to the intra-school dynamics of a university.");
-        System.out.println(TextProcessor.getInstance().toTokens(sentences.get(0)));
         assertEquals(37, TextProcessor.getInstance().toTokens(sentences.get(0)).size());
         assertEquals(16, TextProcessor.getInstance().toTokens(sentences.get(1)).size());
         assertEquals(12, TextProcessor.getInstance().toTokens(sentences.get(2)).size());
