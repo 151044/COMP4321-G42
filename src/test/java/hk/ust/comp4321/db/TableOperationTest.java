@@ -32,13 +32,23 @@ class TableOperationTest {
     }
 
     @Test
-    void getStems() {
+    void getTableNames() {
         assertEquals(4, body.getTableNames().size());
         assertEquals(3, title.getTableNames().size());
 
         conn.deleteFrequencies(1); // deleting should not be destructive
         assertEquals(4, body.getTableNames().size());
         assertEquals(3, title.getTableNames().size());
+    }
+
+    @Test
+    void getStemIds() {
+        assertEquals(4, body.getStemIds().size());
+        assertEquals(3, title.getStemIds().size());
+
+        conn.deleteFrequencies(0);
+        assertEquals(4, body.getStemIds().size());
+        assertEquals(3, title.getStemIds().size());
     }
 
     @Test

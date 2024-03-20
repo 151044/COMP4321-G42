@@ -42,7 +42,7 @@ public abstract class TableOperation {
      * @return The list of word IDs with the prefix
      */
     public List<Integer> getStemIds() {
-        return getTableNames().stream().map(s -> s.replace(getPrefix(), "")).map(Integer::parseInt).toList();
+        return getTableNames().stream().map(s -> s.replace(getPrefix() + "_", "")).map(Integer::parseInt).toList();
     }
 
     /**
