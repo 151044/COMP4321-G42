@@ -1,6 +1,7 @@
 package hk.ust.comp4321.db.visual;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
+import hk.ust.comp4321.db.DatabaseConnection;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -18,6 +19,12 @@ import java.util.List;
  * Main class to visualize a SQLite database.
  */
 public class Visualizer {
+    /**
+     * The main method for the visualizer.
+     * @param args The command line arguments; ignored.
+     * @throws UnsupportedLookAndFeelException If FlatDarculaLaf cannot be loaded
+     * @throws SQLException If an SQL exception is thrown by the database
+     */
     public static void main(String[] args) throws UnsupportedLookAndFeelException, SQLException {
         UIManager.setLookAndFeel(new FlatDarculaLaf());
         JFileChooser chooser = new JFileChooser(Path.of("").toAbsolutePath().toFile());
@@ -36,7 +43,8 @@ public class Visualizer {
         }
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + f.getAbsolutePath());
         DSLContext create = DSL.using(conn, SQLDialect.SQLITE);
+        DatabaseConnection connection = new DatabaseConnection(f.toPath());
         List<Table<?>> tables = create.meta().getTables();
-        new VisualizerFrame(create, tables);
+        new VisualizerFrame(create, tables, connection);
     }
 }
