@@ -114,7 +114,7 @@ public class DatabaseConnection implements AutoCloseable {
      *
      * <p>Note: The word frequencies and children of this document have not been loaded.
      *
-     * @param url The corresponding URL of a document for
+     * @param url The corresponding URL to find a document for
      * @throws IllegalArgumentException If the URL is invalid
      * @return The document associated with this URL.
      */
