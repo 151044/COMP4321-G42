@@ -103,7 +103,7 @@ public final class Document {
         for (int j = 0; j < titleSentences.size(); ++j) {
             // Note: Make every word in lowercase
             List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j)).stream()
-                    .filter(text -> !TextProcessor.allSymbols(text)).map(String::toLowerCase).toList();
+                    .filter(text -> !TextProcessor.isAllSymbols(text)).map(String::toLowerCase).toList();
             List<String> stemmedTitleWords = rawTitleWords.stream().map(NltkPorter::stem).toList();
             // Word level
             for (int k = 0; k < rawTitleWords.size(); ++k) {
@@ -125,7 +125,7 @@ public final class Document {
             // Sentence level
             for (int j = 0; j < bodySentences.size(); ++j) {
                 List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j)).stream()
-                        .filter(text -> !TextProcessor.allSymbols(text)).map(String::toLowerCase).toList();
+                        .filter(text -> !TextProcessor.isAllSymbols(text)).map(String::toLowerCase).toList();
                 List<String> stemmedBodyWords = rawBodyWords.stream().map(NltkPorter::stem).toList();
                 // Word level
                 for (int k = 0; k < rawBodyWords.size(); ++k) {
