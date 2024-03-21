@@ -101,14 +101,21 @@ public final class Document {
         List<String> titleSentences = textProcessor.toSentence(doc.select("title").text());
         // Sentence level
         for (int j = 0; j < titleSentences.size(); ++j) {
-            // Note: Make every word in lowercase
-            List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j)).stream()
-                    .filter(text -> !TextProcessor.isAllSymbols(text)).map(String::toLowerCase).toList();
-            List<String> stemmedTitleWords = rawTitleWords.stream().map(NltkPorter::stem).toList();
+            /*
+            For every sentence:
+            1. Tokenize the sentence
+            2. Filter out tokens that are all symbols
+            3. Turn all the tokens into lowercase
+             */
+            List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j))
+                    .stream()
+                    .filter(text -> !TextProcessor.isAllSymbols(text))
+                    .map(String::toLowerCase).toList();
             // Word level
             for (int k = 0; k < rawTitleWords.size(); ++k) {
                 String rawWord = rawTitleWords.get(k);
-                String stemmedWord = stemmedTitleWords.get(k);
+                String stemmedWord = NltkPorter.stem(rawWord);
+                // Put the stem to the map if it is not a stop word
                 if (!StopWord.isStopWord(stemmedWord)) {
                     // Extract suffix by removing the stem from the raw word
                     String suffix = rawWord.replace(stemmedWord, "");
@@ -124,15 +131,15 @@ public final class Document {
             List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
             // Sentence level
             for (int j = 0; j < bodySentences.size(); ++j) {
-                List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j)).stream()
-                        .filter(text -> !TextProcessor.isAllSymbols(text)).map(String::toLowerCase).toList();
-                List<String> stemmedBodyWords = rawBodyWords.stream().map(NltkPorter::stem).toList();
+                List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j))
+                        .stream()
+                        .filter(text -> !TextProcessor.isAllSymbols(text))
+                        .map(String::toLowerCase).toList();
                 // Word level
                 for (int k = 0; k < rawBodyWords.size(); ++k) {
                     String rawWord = rawBodyWords.get(k);
-                    String stemmedWord = stemmedBodyWords.get(k);
+                    String stemmedWord = NltkPorter.stem(rawWord);
                     if (!StopWord.isStopWord(stemmedWord)) {
-                        // Extract suffix by removing the stem from the raw word
                         String suffix = rawWord.replace(stemmedWord, "");
                         this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, suffix));
                     }
