@@ -114,9 +114,9 @@ public final class Document {
             // Word level
             for (int k = 0; k < rawTitleWords.size(); ++k) {
                 String rawWord = rawTitleWords.get(k);
-                String stemmedWord = NltkPorter.stem(rawWord);
                 // Put the stem to the map if it is not a stop word
-                if (!StopWord.isStopWord(stemmedWord)) {
+                if (!StopWord.isStopWord(rawWord)) {
+                    String stemmedWord = NltkPorter.stem(rawWord);
                     // Extract suffix by removing the stem from the raw word
                     String suffix = rawWord.replace(stemmedWord, "");
                     this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, suffix));
@@ -138,8 +138,8 @@ public final class Document {
                 // Word level
                 for (int k = 0; k < rawBodyWords.size(); ++k) {
                     String rawWord = rawBodyWords.get(k);
-                    String stemmedWord = NltkPorter.stem(rawWord);
-                    if (!StopWord.isStopWord(stemmedWord)) {
+                    if (!StopWord.isStopWord(rawWord)) {
+                        String stemmedWord = NltkPorter.stem(rawWord);
                         String suffix = rawWord.replace(stemmedWord, "");
                         this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, suffix));
                     }
