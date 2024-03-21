@@ -10,6 +10,9 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A panel for selecting which table to display to the user.
+ */
 public class TableSelectorPanel extends JPanel {
     private GridBagConstraints cons = new GridBagConstraints();
     private static final List<String> TYPES = List.of("body", "title");
@@ -17,6 +20,13 @@ public class TableSelectorPanel extends JPanel {
     private TablePanel tablePanel = null;
     private JComboBox<String> stemName;
     private JComboBox<String> tableType = new JComboBox<>(TYPES.toArray(new String[]{}));
+
+    /**
+     * Constructs a new TableSelectorPanel.
+     * @param create The DSL context to send SQL queries with
+     * @param tables The List of tables to filter by
+     * @param conn The database connection to lookup stem IDs with
+     */
     public TableSelectorPanel(DSLContext create, List<Table<?>> tables, DatabaseConnection conn) {
         cons.gridwidth = GridBagConstraints.REMAINDER;
         cons.gridheight = 1;
