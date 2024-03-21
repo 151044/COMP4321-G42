@@ -164,6 +164,9 @@ public final class Document {
      * @param conn The database connection to use
      */
     public void writeWords(DatabaseConnection conn) {
+        // Insert the document into the database
+        conn.insertDocument(this);
+
         // Get access to title table and body table
         TableOperation titleTable = conn.titleOperator();
         TableOperation bodyTable = conn.bodyOperator();
@@ -177,9 +180,6 @@ public final class Document {
             int stemId = bodyTable.insertStem(bodyStem);
             bodyTable.insertWordInfo(stemId, bodyFrequencies.get(bodyStem));
         }
-
-        // Insert the document into the database
-        conn.insertDocument(this);
     }
 
     /**
