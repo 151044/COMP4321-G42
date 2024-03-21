@@ -70,17 +70,11 @@ public class TextProcessor {
     }
 
     /**
-     * Check if all the characters in a text are symbols (not letters nor digits)
+     * Check if all the characters in a text are symbols
      * @param text As the name suggests
      * @return A boolean value
      */
     public static boolean allSymbols(String text) {
-        List<Character> characters = text.chars().mapToObj(c -> (char)c).toList();
-        for (char ch: characters) {
-            if (Character.isDigit(ch) || Character.isLetter(ch)) {
-                return false;
-            }
-        }
-        return true;
+        return text.chars().mapToObj(ch -> (char) ch).allMatch(ch -> !Character.isDigit(ch) && !Character.isLetter(ch));
     }
 }
