@@ -1,6 +1,7 @@
 package hk.ust.comp4321.db.visual;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
+import hk.ust.comp4321.db.DatabaseConnection;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
@@ -36,7 +37,8 @@ public class Visualizer {
         }
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + f.getAbsolutePath());
         DSLContext create = DSL.using(conn, SQLDialect.SQLITE);
+        DatabaseConnection connection = new DatabaseConnection(f.toPath());
         List<Table<?>> tables = create.meta().getTables();
-        new VisualizerFrame(create, tables);
+        new VisualizerFrame(create, tables, connection);
     }
 }
