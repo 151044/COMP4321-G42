@@ -19,6 +19,12 @@ import java.util.List;
  * Main class to visualize a SQLite database.
  */
 public class Visualizer {
+    /**
+     * The main method for the visualizer.
+     * @param args The command line arguments; ignored.
+     * @throws UnsupportedLookAndFeelException If FlatDarculaLaf cannot be loaded
+     * @throws SQLException If an SQL exception is thrown by the database
+     */
     public static void main(String[] args) throws UnsupportedLookAndFeelException, SQLException {
         UIManager.setLookAndFeel(new FlatDarculaLaf());
         JFileChooser chooser = new JFileChooser(Path.of("").toAbsolutePath().toFile());

@@ -17,6 +17,7 @@ public class VisualizerFrame extends JFrame {
      * Creates a new VisualizerFrame to display database tables.
      * @param create The DSLContext to run SQL queries with
      * @param tables The tables to display
+     * @param conn The database connection to lookup IDs with
      */
     public VisualizerFrame(DSLContext create, List<Table<?>> tables, DatabaseConnection conn) {
         super("Database Visualizer");
