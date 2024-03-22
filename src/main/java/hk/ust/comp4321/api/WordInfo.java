@@ -6,6 +6,6 @@ package hk.ust.comp4321.api;
  * @param paragraph The paragraph number of this word
  * @param sentence The sentence number of this word
  * @param wordLocation The location of the word is in the sentence
- * @param suffix The suffix of the stemmed word. Combining the stemmed word with the suffix should produce the original word.
+ * @param rawWord The raw word, before stemming. If the raw word is equal to the stemmed word, store an empty string.
  */
-public record WordInfo(int docId, int paragraph, int sentence, int wordLocation, String suffix) {}
+public record WordInfo(int docId, int paragraph, int sentence, int wordLocation, String rawWord) {}

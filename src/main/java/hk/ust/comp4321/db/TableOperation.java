@@ -73,7 +73,7 @@ public abstract class TableOperation {
     public void insertWordInfo(int stem, WordInfo freq) {
         String tableName = getPrefix(stem);
         create.insertInto(DSL.table(DSL.name(tableName)))
-                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.suffix())
+                .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.rawWord())
                 .onDuplicateKeyIgnore()
                 .execute();
     }
@@ -172,7 +172,7 @@ public abstract class TableOperation {
                             .column("paragraph", INTEGER)
                             .column("sentence", INTEGER)
                             .column("location", INTEGER)
-                            .column("prefix", VARCHAR)
+                            .column("rawWord", VARCHAR)
                             .constraints(
                                     DSL.primaryKey("docId", "paragraph", "sentence", "location"),
                                     DSL.foreignKey("docId").references("Document", "docId")
