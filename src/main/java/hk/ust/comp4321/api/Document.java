@@ -117,9 +117,7 @@ public final class Document {
                 // Put the stem to the map if it is not a stop word
                 if (!StopWord.isStopWord(rawWord)) {
                     String stemmedWord = NltkPorter.stem(rawWord);
-                    // Extract suffix by removing the stem from the raw word
-                    String suffix = rawWord.replace(stemmedWord, "");
-                    this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, suffix));
+                    this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, rawWord));
                 }
             }
         }
@@ -140,8 +138,7 @@ public final class Document {
                     String rawWord = rawBodyWords.get(k);
                     if (!StopWord.isStopWord(rawWord)) {
                         String stemmedWord = NltkPorter.stem(rawWord);
-                        String suffix = rawWord.replace(stemmedWord, "");
-                        this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, suffix));
+                        this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, rawWord));
                     }
                 }
             }
