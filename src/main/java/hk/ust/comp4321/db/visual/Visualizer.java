@@ -44,7 +44,8 @@ public class Visualizer {
         Connection conn = DriverManager.getConnection("jdbc:sqlite:" + f.getAbsolutePath());
         DSLContext create = DSL.using(conn, SQLDialect.SQLITE);
         DatabaseConnection connection = new DatabaseConnection(f.toPath());
-        List<Table<?>> tables = create.meta().getTables();
+        List<Table<?>> tables = create.fetch("SELECT * FROM sqlite_master WHERE type='table'")
+                .map(r -> DSL.table(r.get(2, String.class)));
         new VisualizerFrame(create, tables, connection);
     }
 }
