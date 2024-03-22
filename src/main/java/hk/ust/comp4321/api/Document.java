@@ -117,7 +117,11 @@ public final class Document {
                 // Put the stem to the map if it is not a stop word
                 if (!StopWord.isStopWord(rawWord)) {
                     String stemmedWord = NltkPorter.stem(rawWord);
-                    this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, rawWord));
+                    if (stemmedWord.equals(rawWord)) {
+                        this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, ""));
+                    } else {
+                        this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, rawWord));
+                    }
                 }
             }
         }
@@ -138,7 +142,11 @@ public final class Document {
                     String rawWord = rawBodyWords.get(k);
                     if (!StopWord.isStopWord(rawWord)) {
                         String stemmedWord = NltkPorter.stem(rawWord);
-                        this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, rawWord));
+                        if (stemmedWord.equals(rawWord)) {
+                            this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, ""));
+                        } else {
+                            this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, rawWord));
+                        }
                     }
                 }
             }
