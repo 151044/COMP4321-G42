@@ -84,8 +84,8 @@ class TableOperationTest {
 
     @Test
     void getFrequency() {
-        assertTrue(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 1, "er")));
-        assertFalse(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 239040, "er")));
+        assertTrue(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 1, "computer")));
+        assertFalse(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 239040, "computer")));
     }
 
     @Test
