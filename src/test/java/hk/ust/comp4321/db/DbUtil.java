@@ -65,20 +65,20 @@ public class DbUtil {
                 .execute());
 
         List<WordInfo> computEntries = List.of(
-                new WordInfo(0, 1, 1, 1, "ing"),
-                new WordInfo(0, 1, 2, 3, "e"),
-                new WordInfo(0, 99, 2, 3, "ed"),
-                new WordInfo(1, 3, 2, 1, "es"),
-                new WordInfo(1, 3270972, 2, 1, "er"));
+                new WordInfo(0, 1, 1, 1, "computing"),
+                new WordInfo(0, 1, 2, 3, "compute"),
+                new WordInfo(0, 99, 2, 3, "computed"),
+                new WordInfo(1, 3, 2, 1, "computes"),
+                new WordInfo(1, 3270972, 2, 1, "computer"));
         computEntries.forEach(info -> create.insertInto(DSL.table("body_0"))
-                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
+                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.rawWord())
                 .execute());
 
         List<WordInfo> computTitles = List.of(
-                new WordInfo(0, 1, 1, 1, "ing"),
-                new WordInfo(1, 1, 1, 1, "ers"));
+                new WordInfo(0, 1, 1, 1, "computing"),
+                new WordInfo(1, 1, 1, 1, "computers"));
         computTitles.forEach(info -> create.insertInto(DSL.table("title_0"))
-                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.suffix())
+                .values(info.docId(), info.paragraph(), info.sentence(), info.wordLocation(), info.rawWord())
                 .execute());
 
         List<Document> docs = List.of(
