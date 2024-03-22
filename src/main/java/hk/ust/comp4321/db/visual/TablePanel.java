@@ -14,20 +14,18 @@ import java.util.List;
  * A panel for displaying the rows and columns of a single word table in the database.
  */
 public class TablePanel extends JPanel {
-    private static final List<Class<?>> TYPES = List.of(Integer.class, Integer.class, Integer.class, Integer.class, String.class);
-    private static final List<String> NAMES = List.of("docId", "paragraph", "sentence", "location", "rawWord");
     /**
      * Constructs a new TablePanel with the specified table.
      * @param create The context to run SQL queries with
      * @param t The table to read and display
      */
-    public TablePanel(DSLContext create, Table<?> t) {
+    public TablePanel(DSLContext create, Table<?> t, List<Class<?>> tableTypes, List<String> names) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         List<ListTableModel.ListTableColumn<?>> columns = new ArrayList<>();
         List<Class<?>> types = new ArrayList<>();
-        for (int i = 0; i < TYPES.size(); i++) {
-            Class<?> type = TYPES.get(i);
-            ListTableModel.ListTableColumn<?> listTableColumn = new ListTableModel.ListTableColumn<>(NAMES.get(i), type);
+        for (int i = 0; i < tableTypes.size(); i++) {
+            Class<?> type = tableTypes.get(i);
+            ListTableModel.ListTableColumn<?> listTableColumn = new ListTableModel.ListTableColumn<>(names.get(i), type);
             columns.add(listTableColumn);
             types.add(type);
         }
