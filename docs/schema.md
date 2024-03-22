@@ -33,4 +33,6 @@ The corresponding example to the one above is `title_1`.
 | paragraph  | Integer          | True           |
 | sentence   | Integer          | True           |
 | location   | Integer          | True           |
-| suffix     | Varchar (String) | False          |
+| rawWord*   | Varchar (String) | False          |
+
+* The word will not be stored (an empty string will be stored instead) if the stemmed word is equal to the raw word.

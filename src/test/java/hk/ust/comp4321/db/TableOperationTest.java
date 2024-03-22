@@ -71,21 +71,21 @@ class TableOperationTest {
 
     @Test
     void insertWordInfo() {
-        body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "ion"));
-        title.insertWordInfo(2, new WordInfo(0, 0, 0, 0, "ist"));
+        body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "location"));
+        title.insertWordInfo(2, new WordInfo(0, 0, 0, 0, "opportunist"));
 
-        assertTrue(body.getFrequency(1).contains(new WordInfo(0, 0, 0, 0, "ion")));
-        assertTrue(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "ist")));
-        assertFalse(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "ion")));
+        assertTrue(body.getFrequency(1).contains(new WordInfo(0, 0, 0, 0, "location")));
+        assertTrue(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "opportunist")));
+        assertFalse(title.getFrequency(2).contains(new WordInfo(0, 0, 0, 0, "opportunion")));
 
-        assertDoesNotThrow(() -> body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "ion")));
-        assertDoesNotThrow(() -> title.insertWordInfo(0, new WordInfo(0, 1, 1, 1, "ing")));
+        assertDoesNotThrow(() -> body.insertWordInfo(1, new WordInfo(0, 0, 0, 0, "location")));
+        assertDoesNotThrow(() -> title.insertWordInfo(0, new WordInfo(0, 1, 1, 1, "computing")));
     }
 
     @Test
     void getFrequency() {
-        assertTrue(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 1, "er")));
-        assertFalse(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 239040, "er")));
+        assertTrue(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 1, "computer")));
+        assertFalse(body.getFrequency(0).contains(new WordInfo(1, 3270972, 2, 239040, "computer")));
     }
 
     @Test
