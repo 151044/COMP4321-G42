@@ -39,6 +39,7 @@ public class TableSelectorPanel extends JPanel {
         cons.weightx = 0.0;
         cons.weighty = 0.0;
 
+        setLayout(new GridBagLayout());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(new JLabel("Stem: "));
