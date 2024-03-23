@@ -50,6 +50,8 @@ public class DatabaseConnection implements AutoCloseable {
         conn = DriverManager.getConnection("jdbc:sqlite:" + path.toAbsolutePath());
         create = DSL.using(conn, SQLDialect.SQLITE);
         create.execute("PRAGMA foreign_keys = TRUE");
+        create.execute("PRAGMA journal_mode = WAL;");
+        create.execute("PRAGMA synchronous = NORMAL");
         create.createTableIfNotExists("Document")
                 .column("url", VARCHAR)
                 .column("docId", INTEGER)
