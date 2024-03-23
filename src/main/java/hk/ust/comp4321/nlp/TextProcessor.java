@@ -68,4 +68,13 @@ public class TextProcessor {
     public static TextProcessor getInstance() {
         return INSTANCE;
     }
+
+    /**
+     * Check if all the characters in a text are symbols (not letters nor digits).
+     * @param text A token obtained from a tokenized string
+     * @return A boolean value. True if all characters in the text are symbols. False otherwise.
+     */
+    public static boolean isAllSymbols(String text) {
+        return text.chars().mapToObj(ch -> (char) ch).allMatch(ch -> !Character.isDigit(ch) && !Character.isLetter(ch));
+    }
 }
