@@ -21,6 +21,9 @@ public class TableSelectorPanel extends JPanel {
     private JComboBox<String> stemName;
     private JComboBox<String> tableType = new JComboBox<>(TYPES.toArray(new String[]{}));
 
+    private static final List<Class<?>> TABLE_TYPES = List.of(Integer.class, Integer.class, Integer.class, Integer.class, String.class);
+    private static final List<String> COLUMN_NAMES = List.of("docId", "paragraph", "sentence", "location", "rawWord");
+
     /**
      * Constructs a new TableSelectorPanel.
      * @param create The DSL context to send SQL queries with
@@ -36,6 +39,7 @@ public class TableSelectorPanel extends JPanel {
         cons.weightx = 0.0;
         cons.weighty = 0.0;
 
+        setLayout(new GridBagLayout());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(new JLabel("Stem: "));
@@ -74,7 +78,9 @@ public class TableSelectorPanel extends JPanel {
                 if (tablePanel != null) {
                     remove(tablePanel);
                 }
-                tablePanel = new TablePanel(create, tables.stream().filter(s -> s.getName().equals(tableName)).findFirst().orElseThrow());
+                tablePanel = new TablePanel(create, tables.stream()
+                        .filter(s -> s.getName().equals(tableName))
+                        .findFirst().orElseThrow(), TABLE_TYPES, COLUMN_NAMES);
                 add(tablePanel, cons);
                 invalidate();
                 revalidate();

@@ -1,6 +1,6 @@
 package hk.ust.comp4321.db.visual;
 
-import org.jooq.Field;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.Table;
@@ -10,10 +10,8 @@ import javax.swing.table.TableRowSorter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jooq.DSLContext;
-
 /**
- * A panel for displaying the rows and columns of a single table in the database.
+ * A panel for displaying the rows and columns of a single word table in the database.
  */
 public class TablePanel extends JPanel {
     /**
@@ -21,13 +19,13 @@ public class TablePanel extends JPanel {
      * @param create The context to run SQL queries with
      * @param t The table to read and display
      */
-    public TablePanel(DSLContext create, Table<?> t) {
+    public TablePanel(DSLContext create, Table<?> t, List<Class<?>> tableTypes, List<String> names) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         List<ListTableModel.ListTableColumn<?>> columns = new ArrayList<>();
         List<Class<?>> types = new ArrayList<>();
-        for (Field<?> f : t.fields()) {
-            Class<?> type = f.getType();
-            ListTableModel.ListTableColumn<?> listTableColumn = new ListTableModel.ListTableColumn<>(f.getName(), type);
+        for (int i = 0; i < tableTypes.size(); i++) {
+            Class<?> type = tableTypes.get(i);
+            ListTableModel.ListTableColumn<?> listTableColumn = new ListTableModel.ListTableColumn<>(names.get(i), type);
             columns.add(listTableColumn);
             types.add(type);
         }
