@@ -79,7 +79,7 @@ public final class Document {
         }
 
         // Load child documents
-        this.children.addAll(conn.children(this.id).stream().map(Document::url).toList());
+        this.children.addAll(conn.children(this.id).stream().toList());
 
         // Document is completely loaded
         this.isLoaded = true;
