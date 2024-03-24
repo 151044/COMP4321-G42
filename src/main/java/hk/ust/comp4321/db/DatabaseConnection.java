@@ -163,11 +163,11 @@ public class DatabaseConnection implements AutoCloseable {
     /**
      * Inserts a link into the document link database.
      * @param docId The parent document ID
-     * @param child The child document ID
+     * @param child The child URL
      */
-    public void insertLink(int docId, int child) {
+    public void insertLink(int docId, URL child) {
         create.insertInto(DSL.table("DocumentLink"))
-                .values(docId, child)
+                .values(docId, child.toString())
                 .onDuplicateKeyIgnore()
                 .execute();
     }

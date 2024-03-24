@@ -197,7 +197,7 @@ public final class Document {
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
         // For each child links, find its corresponding child document and extract its document ID and then insert link to the database
-        this.children.forEach(u -> conn.insertLink(this.id, conn.getDocFromUrl(u).id()));
+        this.children.forEach(u -> conn.insertLink(this.id, u));
     }
 
     /**
