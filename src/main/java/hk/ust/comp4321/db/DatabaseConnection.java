@@ -114,6 +114,15 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Checks if a document ID exists in the database.
+     * @param docId The document ID to verify the existence of
+     * @return True if the document ID exists in the database; false otherwise
+     */
+    public boolean hasDocId(int docId) {
+        return create.fetchCount(DSL.table("Document"), DSL.condition(DSL.field(DSL.name("docId")).eq(docId))) > 0;
+    }
+
+    /**
      * Retrieves a document by its URL.
      *
      * <p>Note: The word frequencies and children of this document have not been loaded.
@@ -193,9 +202,12 @@ public class DatabaseConnection implements AutoCloseable {
     /**
      * Retrieves the list of parent documents for the specified document ID.
      * @param docId The document ID to retrieve the parents for
-     * @return A list of parent documents for the specified document ID
+     * @return A list of parent documents for the specified document ID; or an empty list if the document ID does not exist
      */
     public List<Document> parents(int docId) {
+        if (!hasDocId(docId)) {
+            return List.of();
+        }
         return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("DocumentLink")))
                 .where(DSL.condition(DSL.field(DSL.name("childUrl"))
                         .eq(getDocFromId(docId).url().toString())))
