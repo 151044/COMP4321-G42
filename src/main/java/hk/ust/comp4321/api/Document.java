@@ -188,11 +188,8 @@ public final class Document {
     }
 
     /**
-     * Writes the child links scraped to the database as document IDs.
+     * Writes the child links scraped to the database as URLs.
      *
-     * <p>This can <strong>only</strong> be called after all the documents
-     * currently discovered have been written to the database. Otherwise,
-     * we cannot resolve the URLs into DocIds properly.
      * @param conn The database connection to use
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
