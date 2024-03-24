@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -49,11 +50,12 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void insertLink() {
-        assertThrows(IntegrityConstraintViolationException.class, () -> conn.insertLink(1000, 1000)); // nonexistent docId should not work
-        conn.insertLink(2, 3);
-        assertTrue(conn.children(2).stream().anyMatch(doc -> doc.id() == 3)); // normal insert link
-        assertDoesNotThrow(() -> conn.insertLink(2, 3)); // multiple insertions do not crash
+    void insertLink() throws URISyntaxException, MalformedURLException {
+        URL url = new URI("https://www.google.com/").toURL();
+        assertThrows(IntegrityConstraintViolationException.class, () -> conn.insertLink(1000, url)); // nonexistent docId should not work
+        conn.insertLink(2, url);
+        assertTrue(conn.children(2).stream().anyMatch(urls -> urls.toString().equals(url.toString()))); // normal insert link
+        assertDoesNotThrow(() -> conn.insertLink(2, url)); // multiple insertions do not crash
         assertEquals(1, conn.children(2).size()); // multiple insertions do not crash
     }
 
@@ -84,9 +86,12 @@ class DatabaseConnectionTest {
     }
 
     @Test
-    void parents() {
+    void parents() throws URISyntaxException, MalformedURLException {
         assertEquals(2, conn.parents(2).size()); // 2 parents, as expected
         assertEquals(0, conn.parents(1000).size()); // Non-existent IDs should return 0
+
+        assertEquals(2, conn.parents(new URI("https://sqlite.org/lang_datefunc.html").toURL()).size());
+        assertEquals(0, conn.parents(new URI("https://github.com/151044/COMP4321-G42/").toURL()).size());
     }
 
     @Test
@@ -108,5 +113,18 @@ class DatabaseConnectionTest {
         conn.insertDocument(new Document(URI.create("https://github.com/151044/COMP4321-G42/pull/2").toURL(), 5, Instant.now(), 2));
         assertTrue(prev.isBefore(conn.getDocFromId(5).lastModified())); // checks if we have correctly updated on duplicate insert
         assertEquals(2, conn.getDocFromId(5).size()); // ditto
+    }
+
+    @Test
+    void getDocFromUrl() throws URISyntaxException, MalformedURLException {
+        assertThrows(IllegalArgumentException.class, () ->
+                conn.getDocFromUrl(new URI("https://github.com/151044/COMP4321-G42/").toURL())); // invalid URL throws an exception
+        assertEquals(2, conn.getDocFromUrl(new URI("https://sqlite.org/lang_datefunc.html").toURL()).id()); // normal use case
+    }
+
+    @Test
+    void hasDocId() {
+        assertTrue(conn.hasDocId(2));
+        assertFalse(conn.hasDocId(69));
     }
 }
