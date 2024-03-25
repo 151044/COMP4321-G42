@@ -6,6 +6,7 @@ import hk.ust.comp4321.test.ReflectUtil;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -35,9 +36,57 @@ public class DocumentTest {
     }
 
     @Test
+    void retrieveFromDataBaseTitle() throws IOException, SQLException {
+        int docID = DatabaseConnection.nextDocId();
+
+        Document dummyDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
+        dummyDoc.retrieveFromWeb();
+        dummyDoc.writeWords(conn);
+
+        Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
+        testDoc.retrieveFromDatabase(conn);
+
+        Map<String, WordInfo> expectedMap = new HashMap<>();
+        expectedMap.put("test", new WordInfo(5, 0, 0, 0, ""));
+        expectedMap.put("page", new WordInfo(5, 0, 0,1, ""));
+
+        assertEquals(expectedMap, testDoc.titleFrequencies());
+    }
+
+    @Test
+    void retrieveFromDataBaseBody() throws IOException, SQLException {
+        int docID = DatabaseConnection.nextDocId();
+
+        Document dummyDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
+        dummyDoc.retrieveFromWeb();
+        dummyDoc.writeWords(conn);
+
+        Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
+        testDoc.retrieveFromDatabase(conn);
+
+        Map<String, WordInfo> expectedMap = new HashMap<>();
+        expectedMap.put("test", new WordInfo(5, 0, 0, 3, ""));
+        expectedMap.put("page", new WordInfo(5, 0, 0, 4, ""));
+        expectedMap.put("crawler", new WordInfo(5, 0, 0,7, ""));
+        expectedMap.put("gett", new WordInfo(5, 1, 0,1, "getting"));
+        expectedMap.put("admission", new WordInfo(5, 1, 0, 3, ""));
+        expectedMap.put("cse", new WordInfo(5, 1, 0,5, ""));
+        expectedMap.put("depart", new WordInfo(5, 1, 0, 6, "department"));
+        expectedMap.put("hkust", new WordInfo(5, 1, 0,8, ""));
+        expectedMap.put("read", new WordInfo(5, 1, 0, 11, ""));
+        expectedMap.put("internat", new WordInfo(5, 1, 0,14, "international"));
+        expectedMap.put("news", new WordInfo(5, 1, 0,15, ""));
+        expectedMap.put("book", new WordInfo(5, 1, 0,18, "books"));
+        expectedMap.put("movi", new WordInfo(5, 2, 0,3, "movie"));
+        expectedMap.put("list", new WordInfo(5, 2, 0,4, ""));
+        expectedMap.put("new", new WordInfo(5, 2, 0,5, ""));
+
+        assertEquals(expectedMap, testDoc.bodyFrequencies());
+    }
+
+    @Test
     void retrieveFromWebTitle() throws IOException {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 603L);
-        testDoc.writeWords(conn);
         testDoc.retrieveFromWeb();
         Map<String, WordInfo> expectedMap = new HashMap<>();
         expectedMap.put("test", new WordInfo(5, 0, 0, 0, ""));
@@ -48,11 +97,9 @@ public class DocumentTest {
     @Test
     void retrieveFromWebBody() throws IOException {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 603L);
-        testDoc.writeWords(conn);
         testDoc.retrieveFromWeb();
 
         Map<String, WordInfo> expectedMap = new HashMap<>();
-
         expectedMap.put("test", new WordInfo(5, 0, 0, 3, ""));
         expectedMap.put("page", new WordInfo(5, 0, 0, 4, ""));
         expectedMap.put("crawler", new WordInfo(5, 0, 0,7, ""));
