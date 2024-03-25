@@ -17,8 +17,8 @@ public class VisualizerFrame extends JFrame {
     private static final List<TypedTable> SPECIAL_TABLES = List.of(
             new TypedTable("Document", List.of(String.class, Integer.class, Instant.class, Long.class),
                     List.of("url", "docId", "lastModified", "size")),
-            new TypedTable("DocumentLink", List.of(Integer.class, Integer.class),
-                    List.of("docId", "childId")),
+            new TypedTable("DocumentLink", List.of(Integer.class, String.class),
+                    List.of("docId", "childUrl")),
             new TypedTable("WordIndex", List.of(String.class, Integer.class, String.class),
                     List.of("stem", "wordId", "typePrefix")));
     /**
