@@ -85,7 +85,7 @@ public abstract class TableOperation {
      * list if the word does not exist in the database
      */
     public List<WordInfo> getFrequency(int stem) {
-        if (create.meta().getTables(getPrefix(stem)).isEmpty()) {
+        if (!hasWordId(stem)) {
             return List.of();
         } else {
             return create.select()
@@ -179,5 +179,15 @@ public abstract class TableOperation {
                             ).execute();
                     return next;
                 });
+    }
+
+    /**
+     * Checks if a word ID exists for this type of table.
+     * @param wordId The word ID to verify the existence of
+     * @return True if the word ID for this type exists; false otherwise
+     */
+    public boolean hasWordId(int wordId) {
+        return create.fetchCount(DSL.table("WordIndex"), DSL.condition(DSL.field(DSL.name("wordId")).eq(wordId))
+                .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))) > 0;
     }
 }
