@@ -79,7 +79,7 @@ public final class Document {
         }
 
         // Load child documents
-        this.children.addAll(conn.children(this.id).stream().map(Document::url).toList());
+        this.children.addAll(conn.children(this.id).stream().toList());
 
         // Document is completely loaded
         this.isLoaded = true;
@@ -188,16 +188,13 @@ public final class Document {
     }
 
     /**
-     * Writes the child links scraped to the database as document IDs.
+     * Writes the child links scraped to the database as URLs.
      *
-     * <p>This can <strong>only</strong> be called after all the documents
-     * currently discovered have been written to the database. Otherwise,
-     * we cannot resolve the URLs into DocIds properly.
      * @param conn The database connection to use
      */
     public void writeChildrenLinks(DatabaseConnection conn) {
         // For each child links, find its corresponding child document and extract its document ID and then insert link to the database
-        this.children.forEach(u -> conn.insertLink(this.id, conn.getDocFromUrl(u).id()));
+        this.children.forEach(u -> conn.insertLink(this.id, u));
     }
 
     /**
