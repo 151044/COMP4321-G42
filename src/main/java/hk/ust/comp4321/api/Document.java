@@ -189,7 +189,7 @@ public final class Document {
         for (Element link : links) {
             try {
                 this.children.add(URI.create(link.attr("abs:href")).toURL());
-            } catch (MalformedURLException ex) {
+            } catch (IllegalArgumentException | MalformedURLException ex) {
 //                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
             }
         }
