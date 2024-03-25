@@ -1,10 +1,8 @@
 package hk.ust.comp4321.db;
 
 import org.jooq.DSLContext;
-import org.jooq.Named;
 import org.jooq.impl.DSL;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
