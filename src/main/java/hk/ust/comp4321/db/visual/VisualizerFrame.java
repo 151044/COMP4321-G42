@@ -35,7 +35,8 @@ public class VisualizerFrame extends JFrame {
         JTabbedPane pane = new JTabbedPane();
         SPECIAL_TABLES.forEach(s -> pane.addTab(s.name(),
                 new TablePanel(create, DSL.table(s.name()), s.types(), s.names())));
-        pane.addTab("TableLookup", new TableSelectorPanel(create, tables, conn));
+        pane.addTab("Table Lookup", new TableSelectorPanel(create, tables, conn));
+        pane.addTab("Performance Metrics", new PerformancePanel(conn));
         add(pane, BorderLayout.CENTER);
         pack();
         setVisible(true);
