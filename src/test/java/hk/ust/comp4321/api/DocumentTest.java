@@ -2,7 +2,6 @@ package hk.ust.comp4321.api;
 
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.DbUtil;
-import hk.ust.comp4321.test.ReflectUtil;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
