@@ -1,10 +1,8 @@
 package hk.ust.comp4321.db;
 
 import org.jooq.DSLContext;
-import org.jooq.Named;
 import org.jooq.impl.DSL;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,12 +28,6 @@ class BodyTableOperation extends TableOperation {
     @Override
     public String getPrefix() {
         return "body";
-    }
-
-    @Override
-    public List<String> getTableNames() {
-        return create.meta().getTables().stream().map(Named::getName)
-                .filter(n -> n.startsWith("body_")).toList();
     }
 
     @Override
