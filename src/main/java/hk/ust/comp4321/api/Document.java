@@ -74,7 +74,7 @@ public final class Document {
             List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
             String stem = bodyTable.getStemFromId(stemId);
             for (WordInfo wordInfo: bodyInfoList) {
-                this.titleFrequencies.put(stem, wordInfo);
+                this.bodyFrequencies.put(stem, wordInfo);
             }
         }
 
