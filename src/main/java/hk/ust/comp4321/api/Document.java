@@ -60,7 +60,7 @@ public final class Document {
         List<Integer> titleStemIds = titleTable.getStemIds();
 
         for (int stemId: titleStemIds) {
-            List<WordInfo> titleInfoList = titleTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            List<WordInfo> titleInfoList = titleTable.getFrequency(stemId, id);
             String stem = titleTable.getStemFromId(stemId);
             for (WordInfo wordInfo: titleInfoList) {
                 this.titleFrequencies.put(stem, wordInfo);
@@ -71,7 +71,7 @@ public final class Document {
         TableOperation bodyTable = conn.bodyOperator();
         List<Integer> bodyStemIds = bodyTable.getStemIds();
         for (int stemId: bodyStemIds) {
-            List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId, id);
             String stem = bodyTable.getStemFromId(stemId);
             for (WordInfo wordInfo: bodyInfoList) {
                 this.titleFrequencies.put(stem, wordInfo);
