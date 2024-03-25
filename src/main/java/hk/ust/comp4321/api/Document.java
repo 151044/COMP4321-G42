@@ -8,6 +8,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -58,7 +60,6 @@ public final class Document {
         // Load titleFrequencies
         TableOperation titleTable = conn.titleOperator();
         List<Integer> titleStemIds = titleTable.getStemIds();
-
         for (int stemId: titleStemIds) {
             List<WordInfo> titleInfoList = titleTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
             String stem = titleTable.getStemFromId(stemId);
@@ -155,7 +156,11 @@ public final class Document {
         // Extract links
         Elements links = doc.select("a[href]");
         for (Element link : links) {
-            this.children.add(new URL(link.attr("abs:href")));
+            try {
+                this.children.add(URI.create(link.attr("abs:href")).toURL());
+            } catch (MalformedURLException ex) {
+//                System.out.println("Error occurred when crawling this page:" + link + " and hence skipped");
+            }
         }
 
         // Document is completely loaded
