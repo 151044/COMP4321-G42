@@ -5,6 +5,7 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
@@ -35,7 +36,12 @@ public abstract class TableOperation {
      * Gets all the table names associated with this kind of database.
      * @return The list of raw table names in the database satisfying some criteria
      */
-    public abstract List<String> getTableNames();
+    public List<String> getTableNames() {
+        return create.fetch("SELECT * FROM sqlite_master WHERE type='table'")
+                .map(r -> r.get(2, String.class))
+                .stream().filter(s -> s.startsWith(getPrefix() + "_"))
+                .collect(Collectors.toList());
+    }
 
     /**
      * Gets the word IDs associated with this prefix.

@@ -33,12 +33,6 @@ class TitleTableOperation extends TableOperation {
     }
 
     @Override
-    public List<String> getTableNames() {
-        return create.meta().getTables()
-                .stream().map(Table::getName).filter(s -> s.startsWith("title_")).toList();
-    }
-
-    @Override
     public int getNextId() {
         return nextWordId.getAndIncrement();
     }
