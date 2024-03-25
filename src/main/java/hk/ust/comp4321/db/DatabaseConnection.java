@@ -6,6 +6,8 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.sql.*;
@@ -62,9 +64,9 @@ public class DatabaseConnection implements AutoCloseable {
                 ).execute();
         create.createTableIfNotExists("DocumentLink")
                 .column("docId", INTEGER)
-                .column("childId", INTEGER)
+                .column("childUrl", VARCHAR)
                 .constraints(
-                        DSL.primaryKey("docId", "childId"),
+                        DSL.primaryKey("docId", "childUrl"),
                         DSL.foreignKey("docId").references("Document", "docId")
                 )
                 .execute();
@@ -109,6 +111,15 @@ public class DatabaseConnection implements AutoCloseable {
                     }
                 })
                 .orElseThrow(() -> new IllegalArgumentException("No such document ID: " + docId));
+    }
+
+    /**
+     * Checks if a document ID exists in the database.
+     * @param docId The document ID to verify the existence of
+     * @return True if the document ID exists in the database; false otherwise
+     */
+    public boolean hasDocId(int docId) {
+        return create.fetchCount(DSL.table("Document"), DSL.condition(DSL.field(DSL.name("docId")).eq(docId))) > 0;
     }
 
     /**
@@ -161,34 +172,57 @@ public class DatabaseConnection implements AutoCloseable {
     /**
      * Inserts a link into the document link database.
      * @param docId The parent document ID
-     * @param child The child document ID
+     * @param child The child URL
      */
-    public void insertLink(int docId, int child) {
+    public void insertLink(int docId, URL child) {
         create.insertInto(DSL.table("DocumentLink"))
-                .values(docId, child)
+                .values(docId, child.toString())
                 .onDuplicateKeyIgnore()
                 .execute();
     }
 
     /**
-     * Retrieves the list of children documents for the specified document ID.
+     * Retrieves the list of children URLs for the specified document ID.
+     *
      * @param docId The document ID to retrieve the children for
-     * @return A list of child documents for the specified document ID
+     * @return A list of child URLs for the specified document ID
      */
-    public List<Document> children(int docId) {
-        return create.select(DSL.field(DSL.name("childId"))).from(DSL.table(DSL.name("DocumentLink")))
+    public List<URL> children(int docId) {
+        return create.select(DSL.field(DSL.name("childUrl"))).from(DSL.table(DSL.name("DocumentLink")))
                 .where(DSL.condition(DSL.field(DSL.name("docId")).eq(docId)))
-                .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
+                .fetch().map(r -> {
+                    try {
+                        return new URI(r.get(0, String.class)).toURL();
+                    } catch (MalformedURLException | URISyntaxException e) {
+                        throw new RuntimeException("Invalid URL read from database: " + r.get(0, String.class), e);
+                    }
+                });
     }
 
     /**
      * Retrieves the list of parent documents for the specified document ID.
      * @param docId The document ID to retrieve the parents for
-     * @return A list of parent documents for the specified document ID
+     * @return A list of parent documents for the specified document ID; or an empty list if the document ID does not exist
      */
     public List<Document> parents(int docId) {
+        if (!hasDocId(docId)) {
+            return List.of();
+        }
         return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("DocumentLink")))
-                .where(DSL.condition(DSL.field(DSL.name("childId")).eq(docId)))
+                .where(DSL.condition(DSL.field(DSL.name("childUrl"))
+                        .eq(getDocFromId(docId).url().toString())))
+                .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
+    }
+
+    /**
+     * Retrieves the list of parent documents for the specified URL.
+     * @param url The URL to retrieve the parents for
+     * @return A list of parent documents for the specified document ID
+     */
+    public List<Document> parents(URL url) {
+        return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("DocumentLink")))
+                .where(DSL.condition(DSL.field(DSL.name("childUrl"))
+                        .eq(url.toString())))
                 .fetch().map(r -> getDocFromId(r.get(0, Integer.class)));
     }
 

@@ -96,7 +96,7 @@ public class DbUtil {
         List<List<Integer>> links = List.of(List.of(0, 1), List.of(0, 2), List.of(0, 3), List.of(0, 4),
                 List.of(4, 0), List.of(4, 2), List.of(3, 1), List.of(3, 3));
         links.forEach(l -> create.insertInto(DSL.table("DocumentLink"))
-                .values(l.get(0), l.get(1)).execute());
+                .values(l.get(0), docs.get(l.get(1)).url().toString()).execute());
 
         conn.close();
 

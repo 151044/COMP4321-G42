@@ -1,17 +1,17 @@
 # Database Schema
 ## Document Table (Document)
-| Field Name   | Data Type           | Is Primary Key |
-|--------------|---------------------|----------------|
-| url          | Varchar (String)    | False          |
-| docId        | Integer             | True           |
-| lastModified | Instant (java.time) | False          |
-| size         | Long (BIGINT)       | False          |
+| Field Name   | Data Type               | Is Primary Key |
+|--------------|-------------------------|----------------|
+| url          | Varchar (URL as String) | False          |
+| docId        | Integer                 | True           |
+| lastModified | Instant (java.time)     | False          |
+| size         | Long (BIGINT)           | False          |
 
 ## Document Link Table (DocumentLink)
-| Field Name | Data Type | Is Primary Key |
-|------------|-----------|----------------|
-| docId      | Integer   | True           |
-| childId    | Integer   | True           |
+| Field Name | Data Type               | Is Primary Key |
+|------------|-------------------------|----------------|
+| docId      | Integer                 | True           |
+| childUrl   | Varchar (URL as String) | True           |
 
 ## Word Index (WordIndex)
 | Field Name | Data Type        | Is Primary Key |
