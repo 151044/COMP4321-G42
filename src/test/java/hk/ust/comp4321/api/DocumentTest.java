@@ -92,13 +92,13 @@ public class DocumentTest {
         Document books = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/books.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 601L);
         Document movies = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 19080);
 
-//        ustCse.retrieveFromWeb();
+        ustCse.retrieveFromWeb();
         ustCse.writeWords(conn);
-//        news.retrieveFromWeb();
+        news.retrieveFromWeb();
         news.writeWords(conn);
-//        books.retrieveFromWeb();
+        books.retrieveFromWeb();
         books.writeWords(conn);
-//        movies.retrieveFromWeb();
+        movies.retrieveFromWeb();
         movies.writeWords(conn);
 
         int docID = DatabaseConnection.nextDocId();
