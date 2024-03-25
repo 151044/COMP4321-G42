@@ -1,10 +1,8 @@
 package hk.ust.comp4321.db;
 
 import org.jooq.DSLContext;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,12 +28,6 @@ class TitleTableOperation extends TableOperation {
     @Override
     public String getPrefix() {
         return "title";
-    }
-
-    @Override
-    public List<String> getTableNames() {
-        return create.meta().getTables()
-                .stream().map(Table::getName).filter(s -> s.startsWith("title_")).toList();
     }
 
     @Override

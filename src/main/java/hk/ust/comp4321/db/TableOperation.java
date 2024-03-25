@@ -5,6 +5,7 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
@@ -35,7 +36,12 @@ public abstract class TableOperation {
      * Gets all the table names associated with this kind of database.
      * @return The list of raw table names in the database satisfying some criteria
      */
-    public abstract List<String> getTableNames();
+    public List<String> getTableNames() {
+        return create.fetch("SELECT * FROM sqlite_master WHERE type='table'")
+                .map(r -> r.get(2, String.class))
+                .stream().filter(s -> s.startsWith(getPrefix() + "_"))
+                .collect(Collectors.toList());
+    }
 
     /**
      * Gets the word IDs associated with this prefix.
@@ -85,7 +91,7 @@ public abstract class TableOperation {
      * list if the word does not exist in the database
      */
     public List<WordInfo> getFrequency(int stem) {
-        if (create.meta().getTables(getPrefix(stem)).isEmpty()) {
+        if (!hasWordId(stem)) {
             return List.of();
         } else {
             return create.select()
@@ -179,5 +185,15 @@ public abstract class TableOperation {
                             ).execute();
                     return next;
                 });
+    }
+
+    /**
+     * Checks if a word ID exists for this type of table.
+     * @param wordId The word ID to verify the existence of
+     * @return True if the word ID for this type exists; false otherwise
+     */
+    public boolean hasWordId(int wordId) {
+        return create.fetchCount(DSL.table("WordIndex"), DSL.condition(DSL.field(DSL.name("wordId")).eq(wordId))
+                .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))) > 0;
     }
 }
