@@ -29,24 +29,24 @@ public class Main {
 
     }
 
-    public static void writeToFile(Path dbPath, Path outputPath) throws SQLException, IOException {
+    public static void writeToFile(Path dbPath, Path outputPath, int maxSize) throws SQLException, IOException {
         Files.deleteIfExists(outputPath);
         try (DatabaseConnection conn = new DatabaseConnection(dbPath)) {
             List<Document> docs = conn.getDocuments();
             StringBuilder sb = new StringBuilder();
-            docs.stream().limit(30).forEach(d -> {
+            docs.stream().limit(maxSize).forEach(d -> {
                 try {
                     d.retrieveFromDatabase(conn);
                     sb.append(d.titleFrequencies().entrySet().stream()
-                            .sorted(Comparator.<Map.Entry<String, WordInfo>, Integer>comparing(e -> e.getValue().sentence())
-                                    .thenComparing(e -> e.getValue().wordLocation()))
-                            .map(e -> e.getValue().rawWord().isEmpty() ? e.getKey() : e.getValue().rawWord())
+                            .sorted(Comparator.<Map.Entry<WordInfo, String>, Integer>comparing(e -> e.getKey().sentence())
+                                    .thenComparing(e -> e.getKey().wordLocation()))
+                            .map(e -> e.getKey().rawWord().isEmpty() ? e.getValue() : e.getKey().rawWord())
                             .collect(Collectors.joining(" "))).append("\n");
                     sb.append(d.url().toString()).append("\n");
                     sb.append(d.lastModified()).append(", ").append(d.size()).append("\n");
                     Map<String, Long> frequencies = d.bodyFrequencies().entrySet().stream()
-                            .map(s -> s.getValue().rawWord().isEmpty() ?
-                                    s.getKey() : s.getValue().rawWord())
+                            .map(s -> s.getKey().rawWord().isEmpty() ?
+                                    s.getValue() : s.getKey().rawWord())
                             .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
                     sb.append(frequencies.entrySet().stream().sorted(
                             Map.Entry.<String, Long>comparingByValue().reversed())
