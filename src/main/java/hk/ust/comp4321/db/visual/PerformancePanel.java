@@ -69,6 +69,7 @@ public class PerformancePanel extends JPanel {
 
         @Override
         protected void done() {
+            SwingUtilities.invokeLater(() -> bar.setString("%s / %s (%s%%): %s".formatted(max, max, 100, "Complete")));
             exec.shutdown();
             docButton.setEnabled(true);
         }
