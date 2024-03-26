@@ -59,6 +59,7 @@ public class DatabaseConnection implements AutoCloseable {
                 .column("docId", INTEGER)
                 .column("lastModified", INSTANT)
                 .column("size", BIGINT)
+                .column("title", VARCHAR)
                 .constraint(
                         DSL.primaryKey("docId")
                 ).execute();
@@ -166,6 +167,7 @@ public class DatabaseConnection implements AutoCloseable {
                 .onDuplicateKeyUpdate()
                 .set(DSL.field("lastModified", INSTANT), doc.lastModified())
                 .set(DSL.field("size", BIGINT), doc.size())
+                .set(DSL.field("title", VARCHAR), doc.title())
                 .execute();
     }
 
