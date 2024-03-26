@@ -3,6 +3,7 @@ package hk.ust.comp4321.api;
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.DbUtil;
 import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,11 +16,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class DocumentTest {
 
     DatabaseConnection conn;
@@ -160,5 +156,23 @@ public class DocumentTest {
                 URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/Movie.htm").toURL()
         );
         assertEquals(expectedChildren, testDoc.children());
+    }
+
+    @Test
+    void retrieveFromWebGeneral() throws IOException {
+        // This page contains a child link that causes MalformedURLException, which should be handled by the document method
+        Document testDoc1 = new Document(URI.create("https://hkust.edu.hk/").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 18180L);
+        testDoc1.retrieveFromWeb();
+        assertTrue(testDoc1.isLoaded());
+
+        // This page does not contain a body section, which should be handled by the document method and skip the body retrieval
+        Document testDoc2 = new Document(URI.create("https://www.math.hkust.edu.hk/~mamu/").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 37540L);
+        testDoc2.retrieveFromWeb();
+        assertTrue(testDoc2.isLoaded());
+
+        // This page is a PDF file that is not supported by Jsoup, which should be ignored by the document method and hence not loaded
+        Document testDoc3 = new Document(URI.create("https://www.math.hkust.edu.hk/~makyli/art6.pdf").toURL(), DatabaseConnection.nextDocId(), Instant.now(), -69420L);
+        testDoc3.retrieveFromWeb();
+        assertFalse(testDoc3.isLoaded());
     }
 }
