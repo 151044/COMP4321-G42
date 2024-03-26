@@ -27,13 +27,13 @@ public class Main {
     }
 
     public static void writeToFile(Path dbPath, Path outputPath) throws SQLException, IOException {
+        Files.deleteIfExists(outputPath);
         try (DatabaseConnection conn = new DatabaseConnection(dbPath)) {
             List<Document> docs = conn.getDocuments();
             StringBuilder sb = new StringBuilder();
             docs.stream().limit(30).forEach(d -> {
                 try {
                     d.retrieveFromDatabase(conn);
-                    System.out.println(d.bodyFrequencies());
                     sb.append(d.titleFrequencies().entrySet().stream()
                             .sorted(Comparator.comparing(e -> e.getValue().wordLocation()))
                             .map(e -> e.getValue().rawWord())
