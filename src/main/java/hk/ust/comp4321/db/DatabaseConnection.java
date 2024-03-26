@@ -163,7 +163,7 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public void insertDocument(Document doc) {
         create.insertInto(DSL.table("Document"))
-                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size())
+                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size(), doc.title())
                 .onDuplicateKeyUpdate()
                 .set(DSL.field("lastModified", INSTANT), doc.lastModified())
                 .set(DSL.field("size", BIGINT), doc.size())
