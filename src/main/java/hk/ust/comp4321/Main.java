@@ -37,11 +37,7 @@ public class Main {
             docs.stream().limit(maxSize).forEach(d -> {
                 try {
                     d.retrieveFromDatabase(conn);
-                    sb.append(d.titleFrequencies().entrySet().stream()
-                            .sorted(Comparator.<Map.Entry<WordInfo, String>, Integer>comparing(e -> e.getKey().sentence())
-                                    .thenComparing(e -> e.getKey().wordLocation()))
-                            .map(e -> e.getKey().rawWord().isEmpty() ? e.getValue() : e.getKey().rawWord())
-                            .collect(Collectors.joining(" "))).append("\n");
+                    sb.append(d.title()).append("\n");
                     sb.append(d.url().toString()).append("\n");
                     sb.append(d.lastModified()).append(", ").append(d.size()).append("\n");
                     Map<String, Long> frequencies = d.bodyFrequencies().entrySet().stream()
