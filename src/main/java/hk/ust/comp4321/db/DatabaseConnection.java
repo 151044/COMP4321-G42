@@ -170,6 +170,26 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Retrieves all the entries in the document table.
+     * @return The list of all tables
+     */
+    public List<Document> getDocuments() {
+        return create.select()
+                .from(DSL.table("Document"))
+                .fetch().stream()
+                .map(r -> {
+                    try {
+                        return new Document(new URL(r.get(0, String.class)),
+                                r.get(1, Integer.class),
+                                r.get(2, Instant.class),
+                                r.get(3, Long.class));
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+    }
+
+    /**
      * Inserts a link into the document link database.
      * @param docId The parent document ID
      * @param child The child URL
