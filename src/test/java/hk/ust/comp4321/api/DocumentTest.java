@@ -43,9 +43,9 @@ public class DocumentTest {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
         testDoc.retrieveFromDatabase(conn);
 
-        Map<String, WordInfo> expectedMap = new HashMap<>();
-        expectedMap.put("test", new WordInfo(5, 0, 0, 0, ""));
-        expectedMap.put("page", new WordInfo(5, 0, 0,1, ""));
+        Map<WordInfo, String> expectedMap = new HashMap<>();
+        expectedMap.put(new WordInfo(5, 0, 0, 0, ""), "test");
+        expectedMap.put(new WordInfo(5, 0, 0,1, ""), "page");
 
         assertEquals(expectedMap, testDoc.titleFrequencies());
     }
@@ -61,22 +61,22 @@ public class DocumentTest {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), docID, Instant.now(), 603L);
         testDoc.retrieveFromDatabase(conn);
 
-        Map<String, WordInfo> expectedMap = new HashMap<>();
-        expectedMap.put("test", new WordInfo(5, 0, 0, 3, ""));
-        expectedMap.put("page", new WordInfo(5, 0, 0, 4, ""));
-        expectedMap.put("crawler", new WordInfo(5, 0, 0,7, ""));
-        expectedMap.put("gett", new WordInfo(5, 1, 0,1, "getting"));
-        expectedMap.put("admission", new WordInfo(5, 1, 0, 3, ""));
-        expectedMap.put("cse", new WordInfo(5, 1, 0,5, ""));
-        expectedMap.put("depart", new WordInfo(5, 1, 0, 6, "department"));
-        expectedMap.put("hkust", new WordInfo(5, 1, 0,8, ""));
-        expectedMap.put("read", new WordInfo(5, 1, 0, 11, ""));
-        expectedMap.put("internat", new WordInfo(5, 1, 0,14, "international"));
-        expectedMap.put("news", new WordInfo(5, 1, 0,15, ""));
-        expectedMap.put("book", new WordInfo(5, 1, 0,18, "books"));
-        expectedMap.put("movi", new WordInfo(5, 2, 0,3, "movie"));
-        expectedMap.put("list", new WordInfo(5, 2, 0,4, ""));
-        expectedMap.put("new", new WordInfo(5, 2, 0,5, ""));
+        Map<WordInfo, String> expectedMap = new HashMap<>();
+        expectedMap.put(new WordInfo(5, 0, 0, 3, ""), "test");
+        expectedMap.put(new WordInfo(5, 0, 0, 4, ""), "page");
+        expectedMap.put(new WordInfo(5, 0, 0,7, ""), "crawler");
+        expectedMap.put(new WordInfo(5, 1, 0,1, "getting"), "gett");
+        expectedMap.put(new WordInfo(5, 1, 0, 3, ""), "admission");
+        expectedMap.put(new WordInfo(5, 1, 0,5, ""), "cse");
+        expectedMap.put(new WordInfo(5, 1, 0, 6, "department"), "depart");
+        expectedMap.put(new WordInfo(5, 1, 0,8, ""), "hkust");
+        expectedMap.put(new WordInfo(5, 1, 0, 11, ""), "read");
+        expectedMap.put(new WordInfo(5, 1, 0,14, "international"), "internat");
+        expectedMap.put(new WordInfo(5, 1, 0,15, ""), "news");
+        expectedMap.put(new WordInfo(5, 1, 0,18, "books"), "book");
+        expectedMap.put(new WordInfo(5, 2, 0,3, "movie"), "movi");
+        expectedMap.put(new WordInfo(5, 2, 0,4, ""), "list");
+        expectedMap.put(new WordInfo(5, 2, 0,5, ""), "new");
 
         assertEquals(expectedMap, testDoc.bodyFrequencies());
     }
@@ -114,9 +114,9 @@ public class DocumentTest {
     void retrieveFromWebTitle() throws IOException {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 603L);
         testDoc.retrieveFromWeb();
-        Map<String, WordInfo> expectedMap = new HashMap<>();
-        expectedMap.put("test", new WordInfo(5, 0, 0, 0, ""));
-        expectedMap.put("page", new WordInfo(5, 0, 0,1, ""));
+        Map<WordInfo, String> expectedMap = new HashMap<>();
+        expectedMap.put(new WordInfo(5, 0, 0, 0, ""), "test");
+        expectedMap.put(new WordInfo(5, 0, 0,1, ""), "page");
         assertEquals(expectedMap, testDoc.titleFrequencies());
     }
 
@@ -125,22 +125,22 @@ public class DocumentTest {
         Document testDoc = new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), DatabaseConnection.nextDocId(), Instant.now(), 603L);
         testDoc.retrieveFromWeb();
 
-        Map<String, WordInfo> expectedMap = new HashMap<>();
-        expectedMap.put("test", new WordInfo(5, 0, 0, 3, ""));
-        expectedMap.put("page", new WordInfo(5, 0, 0, 4, ""));
-        expectedMap.put("crawler", new WordInfo(5, 0, 0,7, ""));
-        expectedMap.put("gett", new WordInfo(5, 1, 0,1, "getting"));
-        expectedMap.put("admission", new WordInfo(5, 1, 0, 3, ""));
-        expectedMap.put("cse", new WordInfo(5, 1, 0,5, ""));
-        expectedMap.put("depart", new WordInfo(5, 1, 0, 6, "department"));
-        expectedMap.put("hkust", new WordInfo(5, 1, 0,8, ""));
-        expectedMap.put("read", new WordInfo(5, 1, 0, 11, ""));
-        expectedMap.put("internat", new WordInfo(5, 1, 0,14, "international"));
-        expectedMap.put("news", new WordInfo(5, 1, 0,15, ""));
-        expectedMap.put("book", new WordInfo(5, 1, 0,18, "books"));
-        expectedMap.put("movi", new WordInfo(5, 2, 0,3, "movie"));
-        expectedMap.put("list", new WordInfo(5, 2, 0,4, ""));
-        expectedMap.put("new", new WordInfo(5, 2, 0,5, ""));
+        Map<WordInfo, String> expectedMap = new HashMap<>();
+        expectedMap.put(new WordInfo(5, 0, 0, 3, ""), "test");
+        expectedMap.put(new WordInfo(5, 0, 0, 4, ""), "page");
+        expectedMap.put(new WordInfo(5, 0, 0,7, ""), "crawler");
+        expectedMap.put(new WordInfo(5, 1, 0,1, "getting"), "gett");
+        expectedMap.put(new WordInfo(5, 1, 0, 3, ""), "admission");
+        expectedMap.put(new WordInfo(5, 1, 0,5, ""), "cse");
+        expectedMap.put(new WordInfo(5, 1, 0, 6, "department"), "depart");
+        expectedMap.put(new WordInfo(5, 1, 0,8, ""), "hkust");
+        expectedMap.put(new WordInfo(5, 1, 0, 11, ""), "read");
+        expectedMap.put(new WordInfo(5, 1, 0,14, "international"), "internat");
+        expectedMap.put(new WordInfo(5, 1, 0,15, ""), "news");
+        expectedMap.put(new WordInfo(5, 1, 0,18, "books"), "book");
+        expectedMap.put(new WordInfo(5, 2, 0,3, "movie"), "movi");
+        expectedMap.put(new WordInfo(5, 2, 0,4, ""), "list");
+        expectedMap.put(new WordInfo(5, 2, 0,5, ""), "new");
 
         assertEquals(expectedMap, testDoc.bodyFrequencies());
     }

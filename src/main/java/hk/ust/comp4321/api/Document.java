@@ -30,8 +30,8 @@ public final class Document {
     private final Instant lastModified;
     private final int id;
     private final long size;
-    private final Map<String, WordInfo> bodyFrequencies = new HashMap<>();
-    private final Map<String, WordInfo> titleFrequencies = new HashMap<>();
+    private final Map<WordInfo, String> bodyFrequencies = new HashMap<>();
+    private final Map<WordInfo, String> titleFrequencies = new HashMap<>();
     private final List<URL> children = new ArrayList<>();
     private boolean isLoaded = false;
 
@@ -67,7 +67,7 @@ public final class Document {
             List<WordInfo> titleInfoList = titleTable.getFrequency(stemId, id);
             String stem = titleTable.getStemFromId(stemId);
             for (WordInfo wordInfo: titleInfoList) {
-                this.titleFrequencies.put(stem, wordInfo);
+                this.titleFrequencies.put(wordInfo, stem);
             }
         }
 
@@ -78,7 +78,7 @@ public final class Document {
             List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId, id);
             String stem = bodyTable.getStemFromId(stemId);
             for (WordInfo wordInfo: bodyInfoList) {
-                this.bodyFrequencies.put(stem, wordInfo);
+                this.bodyFrequencies.put(wordInfo, stem);
             }
         }
 
@@ -145,9 +145,9 @@ public final class Document {
                     String stemmedWord = NltkPorter.stem(rawWord);
                     // Store empty string is the stemmed word is identical to the raw word
                     if (stemmedWord.equals(rawWord)) {
-                        this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, ""));
+                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, ""), stemmedWord);
                     } else {
-                        this.titleFrequencies.put(stemmedWord, new WordInfo(this.id, 0, j, k, rawWord));
+                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, rawWord), stemmedWord);
                     }
                 }
             }
@@ -174,9 +174,9 @@ public final class Document {
                         if (!StopWord.isStopWord(rawWord)) {
                             String stemmedWord = NltkPorter.stem(rawWord);
                             if (stemmedWord.equals(rawWord)) {
-                                this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, ""));
+                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, ""), stemmedWord);
                             } else {
-                                this.bodyFrequencies.put(stemmedWord, new WordInfo(this.id, i, j, k, rawWord));
+                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, rawWord), stemmedWord);
                             }
                         }
                     }
@@ -213,13 +213,13 @@ public final class Document {
         TableOperation bodyTable = conn.bodyOperator();
 
         // For every pair of stem (String) and frequency (WordInfo), get a stem ID and insert the ID and the frequency into the database
-        for (String titleStem: titleFrequencies.keySet()) {
-            int stemId = titleTable.insertStem(titleStem);
-            titleTable.insertWordInfo(stemId, titleFrequencies.get(titleStem));
+        for (WordInfo titleWordInfo: titleFrequencies.keySet()) {
+            int stemId = titleTable.insertStem(titleFrequencies.get(titleWordInfo));
+            titleTable.insertWordInfo(stemId, titleWordInfo);
         }
-        for (String bodyStem: bodyFrequencies.keySet()) {
-            int stemId = bodyTable.insertStem(bodyStem);
-            bodyTable.insertWordInfo(stemId, bodyFrequencies.get(bodyStem));
+        for (WordInfo bodyWordInfo: bodyFrequencies.keySet()) {
+            int stemId = bodyTable.insertStem(bodyFrequencies.get(bodyWordInfo));
+            bodyTable.insertWordInfo(stemId, bodyWordInfo);
         }
     }
 
@@ -273,7 +273,7 @@ public final class Document {
      * @return The list of words loaded, or an empty map if
      * the words have not been loaded into memory.
      */
-    public Map<String, WordInfo> bodyFrequencies() {
+    public Map<WordInfo, String> bodyFrequencies() {
         return bodyFrequencies;
     }
 
@@ -283,7 +283,7 @@ public final class Document {
      * @return The list of words loaded, or an empty map if
      * the words have not been loaded into memory.
      */
-    public Map<String, WordInfo> titleFrequencies() {
+    public Map<WordInfo, String> titleFrequencies() {
         return titleFrequencies;
     }
 
