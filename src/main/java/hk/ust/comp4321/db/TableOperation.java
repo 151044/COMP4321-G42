@@ -104,6 +104,28 @@ public abstract class TableOperation {
     }
 
     /**
+     * Finds the corresponding title word frequencies of the stem for a specified document ID in this kind of table only.
+     *
+     * @param stem The word ID representing the stem to find the word frequencies for
+     * @param docId The document ID to filter by
+     * @return The list of word frequencies associated with this stem, or an empty
+     * list if the word does not exist in the database
+     */
+    public List<WordInfo> getFrequency(int stem, int docId) {
+        if (!hasWordId(stem)) {
+            return List.of();
+        } else {
+            return create.select()
+                    .from(DSL.table(DSL.name(getPrefix(stem))))
+                    .where(DSL.condition(DSL.field(DSL.name("docId"), Integer.class).eq(docId)))
+                    .fetch()
+                    .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
+                            r.get(2, Integer.class), r.get(3, Integer.class), r.get(4, String.class)))
+                    .toList();
+        }
+    }
+
+    /**
      * Deletes all word frequencies in this table operation group associated
      * with the given document ID.
      * @param docId The document IDs to drop

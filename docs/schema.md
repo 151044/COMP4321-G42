@@ -6,6 +6,7 @@
 | docId        | Integer                 | True           |
 | lastModified | Instant (java.time)     | False          |
 | size         | Long (BIGINT)           | False          |
+| title        | Varchar (String)        | False          |
 
 ## Document Link Table (DocumentLink)
 | Field Name | Data Type               | Is Primary Key |

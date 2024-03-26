@@ -59,6 +59,7 @@ public class DatabaseConnection implements AutoCloseable {
                 .column("docId", INTEGER)
                 .column("lastModified", INSTANT)
                 .column("size", BIGINT)
+                .column("title", VARCHAR)
                 .constraint(
                         DSL.primaryKey("docId")
                 ).execute();
@@ -162,11 +163,33 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public void insertDocument(Document doc) {
         create.insertInto(DSL.table("Document"))
-                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size())
+                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size(), doc.title())
                 .onDuplicateKeyUpdate()
                 .set(DSL.field("lastModified", INSTANT), doc.lastModified())
                 .set(DSL.field("size", BIGINT), doc.size())
+                .set(DSL.field("title", VARCHAR), doc.title())
                 .execute();
+    }
+
+    /**
+     * Retrieves all the entries in the document table.
+     * @return The list of all tables
+     */
+    public List<Document> getDocuments() {
+        return create.select()
+                .from(DSL.table("Document"))
+                .fetch().stream()
+                .map(r -> {
+                    try {
+                        return new Document(new URL(r.get(0, String.class)),
+                                r.get(1, Integer.class),
+                                r.get(2, Instant.class),
+                                r.get(3, Long.class),
+                                r.get(4, String.class));
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
     }
 
     /**

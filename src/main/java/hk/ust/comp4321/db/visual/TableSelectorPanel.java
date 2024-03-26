@@ -46,11 +46,8 @@ public class TableSelectorPanel extends JPanel {
         List<String> stemNames = tables.stream()
                 .filter(t -> !EXCLUDED.contains(t.getName()))
                 .map(t -> t.getName().split("_"))
-                .map(s -> switch (s[0]) {
-                    case "body" -> conn.bodyOperator().getStemFromId(Integer.parseInt(s[1]));
-                    case "title" -> conn.titleOperator().getStemFromId(Integer.parseInt(s[1]));
-                    default -> throw new IllegalStateException("Invalid table: " + Arrays.toString(s));
-                })
+                .filter(s -> s[0].equals("body"))
+                .map(s -> conn.bodyOperator().getStemFromId(Integer.parseInt(s[1])))
                 .distinct()
                 .toList();
         stemName = new JComboBox<>(stemNames.toArray(new String[]{}));
@@ -58,6 +55,21 @@ public class TableSelectorPanel extends JPanel {
         panel.add(stemName);
         panel.add(new JLabel("Type: "));
         panel.add(tableType);
+
+        tableType.addActionListener(ignored -> {
+            SwingUtilities.invokeLater(() -> {
+                stemName.setEditable(false);
+                stemName.removeAllItems();
+                tables.stream()
+                        .filter(t -> !EXCLUDED.contains(t.getName()))
+                        .map(t -> t.getName().split("_"))
+                        .filter(s -> s[0].equals(tableType.getSelectedItem()))
+                        .map(s -> conn.bodyOperator().getStemFromId(Integer.parseInt(s[1])))
+                        .distinct()
+                        .forEach(stemName::addItem);
+                stemName.setEditable(true);
+            });
+        });
 
         JButton submit = new JButton("Submit Query");
         submit.addActionListener(ignored -> {

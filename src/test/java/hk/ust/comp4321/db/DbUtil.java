@@ -82,15 +82,15 @@ public class DbUtil {
                 .execute());
 
         List<Document> docs = List.of(
-                new Document(new URI("https://www.cse.ust.hk/~kwtleung/").toURL(), 0, Instant.ofEpochMilli(1709693690504L), 25565),
-                new Document(new URI("https://www.w3schools.com/sql/sql_insert.asp").toURL(), 1, Instant.ofEpochMilli(1709693690504L), 25565),
-                new Document(new URI("https://sqlite.org/lang_datefunc.html").toURL(), 2, Instant.ofEpochMilli(93690504), 2639425),
-                new Document(new URI("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html").toURL(), 3, Instant.ofEpochMilli(95023232344L), 263942533),
-                new Document(new URI("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()").toURL(), 4, Instant.ofEpochMilli(93690504), 2639425)
+                new Document(new URI("https://www.cse.ust.hk/~kwtleung/").toURL(), 0, Instant.ofEpochMilli(1709693690504L), 25565, "Kenneth Wai-Ting LEUNG (PhD, HKUST, 2010)"),
+                new Document(new URI("https://www.w3schools.com/sql/sql_insert.asp").toURL(), 1, Instant.ofEpochMilli(1709693690504L), 25565, "SQL INSERT INTO Statement"),
+                new Document(new URI("https://sqlite.org/lang_datefunc.html").toURL(), 2, Instant.ofEpochMilli(93690504), 2639425, "Date And Time Functions"),
+                new Document(new URI("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/package-summary.html").toURL(), 3, Instant.ofEpochMilli(95023232344L), 263942533, "java.time (Java SE 17 & JDK 17)"),
+                new Document(new URI("https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/System.html#currentTimeMillis()").toURL(), 4, Instant.ofEpochMilli(93690504), 2639425, "System (Java SE 17 & JDK 17)")
         );
 
         docs.forEach(doc -> create.insertInto(DSL.table("Document"))
-                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size())
+                .values(doc.url().toString(), doc.id(), doc.lastModified(), doc.size(), doc.title())
                 .execute());
 
         List<List<Integer>> links = List.of(List.of(0, 1), List.of(0, 2), List.of(0, 3), List.of(0, 4),

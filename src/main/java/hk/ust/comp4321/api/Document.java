@@ -17,6 +17,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A class representing a single document, indexed by its URL.
@@ -34,6 +35,7 @@ public final class Document {
     private final Map<WordInfo, String> titleFrequencies = new HashMap<>();
     private final List<URL> children = new ArrayList<>();
     private boolean isLoaded = false;
+    private String title = "";
 
     /**
      * Creates a new Document with the specified URL.
@@ -47,6 +49,24 @@ public final class Document {
         this.lastModified = lastModified;
         this.id = id;
         this.size = size;
+    }
+
+    /**
+     * Creates a new Document with the specified URL and title.
+     *
+     * @implNote This should be called from the database and not by user code.
+     * @param url The URL of the document
+     * @param lastModified The Unix timestamp at which the document was last modified
+     * @param id The document ID; must be unique
+     * @param size The number of words of the document
+     * @param title The title of the page
+     */
+    public Document(URL url, int id, Instant lastModified, long size, String title) {
+        this.url = url;
+        this.lastModified = lastModified;
+        this.id = id;
+        this.size = size;
+        this.title = title;
     }
 
     /**
@@ -64,7 +84,7 @@ public final class Document {
         TableOperation titleTable = conn.titleOperator();
         List<Integer> titleStemIds = titleTable.getStemIds();
         for (int stemId: titleStemIds) {
-            List<WordInfo> titleInfoList = titleTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            List<WordInfo> titleInfoList = titleTable.getFrequency(stemId, id);
             String stem = titleTable.getStemFromId(stemId);
             for (WordInfo wordInfo: titleInfoList) {
                 this.titleFrequencies.put(wordInfo, stem);
@@ -75,7 +95,7 @@ public final class Document {
         TableOperation bodyTable = conn.bodyOperator();
         List<Integer> bodyStemIds = bodyTable.getStemIds();
         for (int stemId: bodyStemIds) {
-            List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId).stream().filter(x -> x.docId() == this.id).toList();
+            List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId, id);
             String stem = bodyTable.getStemFromId(stemId);
             for (WordInfo wordInfo: bodyInfoList) {
                 this.bodyFrequencies.put(wordInfo, stem);
@@ -124,7 +144,8 @@ public final class Document {
 
         // Extract title sections
         // Note: There must be exactly one title per HTMl file (i.e., one "paragraph" only)
-        List<String> titleSentences = textProcessor.toSentence(doc.select("title").text());
+        title = doc.select("title").text();
+        List<String> titleSentences = textProcessor.toSentence(title);
         // Sentence level
         for (int j = 0; j < titleSentences.size(); ++j) {
             /*
@@ -302,6 +323,14 @@ public final class Document {
      */
     public long size() {
         return size;
+    }
+
+    /**
+     * Gets the title of the document, or an empty String if the document is not loaded.
+     * @return The text in the title tag of the document
+     */
+    public String title() {
+        return title;
     }
 
     @Override

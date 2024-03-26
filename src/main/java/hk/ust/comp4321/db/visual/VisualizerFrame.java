@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class VisualizerFrame extends JFrame {
     private static final List<TypedTable> SPECIAL_TABLES = List.of(
-            new TypedTable("Document", List.of(String.class, Integer.class, Instant.class, Long.class),
-                    List.of("url", "docId", "lastModified", "size")),
+            new TypedTable("Document", List.of(String.class, Integer.class, Instant.class, Long.class, String.class),
+                    List.of("url", "docId", "lastModified", "size", "title")),
             new TypedTable("DocumentLink", List.of(Integer.class, String.class),
                     List.of("docId", "childUrl")),
             new TypedTable("WordIndex", List.of(String.class, Integer.class, String.class),
@@ -35,7 +35,8 @@ public class VisualizerFrame extends JFrame {
         JTabbedPane pane = new JTabbedPane();
         SPECIAL_TABLES.forEach(s -> pane.addTab(s.name(),
                 new TablePanel(create, DSL.table(s.name()), s.types(), s.names())));
-        pane.addTab("TableLookup", new TableSelectorPanel(create, tables, conn));
+        pane.addTab("Table Lookup", new TableSelectorPanel(create, tables, conn));
+        pane.addTab("Performance Metrics", new PerformancePanel(conn));
         add(pane, BorderLayout.CENTER);
         pack();
         setVisible(true);
