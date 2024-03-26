@@ -3,12 +3,15 @@ package hk.ust.comp4321;
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.db.DatabaseConnection;
+import hk.ust.comp4321.nlp.NltkPorter;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +38,15 @@ public class Main {
                 try {
                     d.retrieveFromDatabase(conn);
                     sb.append(d.titleFrequencies().entrySet().stream()
-                            .sorted(Comparator.comparing(e -> e.getValue().wordLocation()))
-                            .map(e -> e.getValue().rawWord())
+                            .sorted(Comparator.<Map.Entry<String, WordInfo>, Integer>comparing(e -> e.getValue().sentence())
+                                    .thenComparing(e -> e.getValue().wordLocation()))
+                            .map(e -> e.getValue().rawWord().isEmpty() ? e.getKey() : e.getValue().rawWord())
                             .collect(Collectors.joining(" "))).append("\n");
                     sb.append(d.url().toString()).append("\n");
                     sb.append(d.lastModified()).append(", ").append(d.size()).append("\n");
-                    Map<String, Long> frequencies = d.bodyFrequencies().values().stream().map(WordInfo::rawWord)
+                    Map<String, Long> frequencies = d.bodyFrequencies().entrySet().stream()
+                            .map(s -> s.getValue().rawWord().isEmpty() ?
+                                    s.getKey() : s.getValue().rawWord())
                             .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
                     sb.append(frequencies.entrySet().stream().sorted(
                             Map.Entry.<String, Long>comparingByValue().reversed())
