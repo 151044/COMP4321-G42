@@ -34,21 +34,20 @@ public class Spider {
 
     /**
      * Attempts to discover web pages from the specified URL.
-     * @param type The stop condition to use
      * @param threshold The integer threshold to stop crawling at
      * @return The List of discovered URLs
      */
-    public List<URL> discover(StopType type, int threshold) {
-        return discover(base, type, threshold);
+    public List<URL> discover(int threshold) {
+        return discover(base, threshold);
     }
-    private List<URL> discover(URL url, StopType type, int threshold) {
+    private List<URL> discover(URL url, int threshold) {
 
         // For BFS purposes
         // Update: There is no need to retain insertion order, but retLinks remains to not return visited dead links
         Set<URL> visitedLinks = new HashSet<>();
         List<URL> retLinks = new ArrayList<>();
         Queue<URL> queue = new ArrayDeque<>();
-        LinkedList<Integer> parentIDs = new LinkedList<>();
+        Queue<Integer> parentIDs = new ArrayDeque<>();
 
         // start
         retLinks.add(url);
@@ -70,7 +69,7 @@ public class Spider {
                 if (response.statusCode() == 200) {
                     if (!parentIDs.isEmpty()) {
                         retLinks.add(currentURL);
-                        conn.insertLink(parentIDs.removeFirst(), currentURL);
+                        conn.insertLink(parentIDs.poll(), currentURL);
                         indexed++;
                     }
                 } else {
@@ -129,21 +128,5 @@ public class Spider {
         }
 
         return retLinks;
-    }
-
-    /**
-     * Represents the type of stopping condition of the spider.
-     */
-    public enum StopType {
-        /**
-         * The depth stopping condition.
-         * When the spider reaches a certain recursive depth, stop crawling.
-         */
-        DEPTH,
-        /**
-         * The indexed stopping condition.
-         * When the spider has indexed a certain number of pages, stop crawling.
-         */
-        INDEXED
     }
 }
