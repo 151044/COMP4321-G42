@@ -8,8 +8,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.lang.Long.parseLong;
@@ -21,8 +21,6 @@ public class Spider {
     private final URL base;
     private final DatabaseConnection conn;
     private int indexed = 0;
-    // private int recurDepth = 0;
-    private final SimpleDateFormat headerDate = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
 
     /**
      * Constructs a new Spider.
@@ -79,7 +77,7 @@ public class Spider {
                     continue;
                 }
 
-                Instant lastModifiedDate = headerDate.parse(response.header("Last-Modified")).toInstant();
+                Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header("Last-Modified")));
 
                 try {
                     Document currDoc = conn.getDocFromUrl(currentURL);
