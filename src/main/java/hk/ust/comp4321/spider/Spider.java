@@ -10,10 +10,7 @@ import org.jsoup.select.Elements;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Long.parseLong;
 
@@ -49,10 +46,10 @@ public class Spider {
     private List<URL> discover(URL url, StopType type, int threshold) {
 
         // For BFS purposes
-        // HashSet and List separate to retain insertion order
-        HashSet<URL> visitedLinks = new HashSet<>();
+        // Update: There is no need to retain insertion order, but retLinks remains to not return visited dead links
+        Set<URL> visitedLinks = new HashSet<>();
         List<URL> retLinks = new ArrayList<>();
-        LinkedList<URL> queue = new LinkedList<>();
+        Queue<URL> queue = new ArrayDeque<>();
         LinkedList<Integer> parentIDs = new LinkedList<>();
 
         // start
@@ -67,7 +64,7 @@ public class Spider {
                 break;
             }
             // get current url
-            URL currentURL = queue.removeFirst();
+            URL currentURL = queue.poll();
 
             try {
                 Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
