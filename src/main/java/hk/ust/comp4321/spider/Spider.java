@@ -53,10 +53,6 @@ public class Spider {
      * @return The List of discovered URLs
      */
     public List<URL> discover(int threshold) throws IOException {
-        return discover(base, threshold);
-    }
-    private List<URL> discover(URL url, int threshold) throws IOException {
-
         // Reset indexed
         int indexed = 0;
 
@@ -66,7 +62,7 @@ public class Spider {
         List<URL> retLinks = new ArrayList<>();
         Queue<URL> queue = new ArrayDeque<>();
 
-        queue.add(url);
+        queue.add(base);
 
         while (indexed < threshold) {
 
@@ -92,8 +88,15 @@ public class Spider {
 
                 if (conn.hasDocUrl(currentURL)) {
                     Document currDoc = conn.getDocFromUrl(currentURL);
+                    currDoc.retrieveFromWeb();
+                    for (URL link : currDoc.children()) {
+                        if (!visitedLinks.contains(link)) {
+                            visitedLinks.add(link);
+                            queue.add(link);
+                            conn.insertLink(currDoc.id(), link);
+                        }
+                    }
                     if (lastModifiedDate.isAfter(currDoc.lastModified())) {
-
                         retLinks.add(currentURL);
                         indexed++;
                         Document doc = new Document(
@@ -103,15 +106,8 @@ public class Spider {
                                 retrievePageSize(response)
                         );
                         conn.insertDocument(doc);
-
-                    }
-                    currDoc.retrieveFromWeb();
-                    for (URL link : currDoc.children()) {
-                        if (!visitedLinks.contains(link)) {
-                            visitedLinks.add(link);
-                            queue.add(link);
-                            conn.insertLink(currDoc.id(), link);
-                        }
+                        conn.deleteFrequencies(doc.id());
+                        currDoc.writeWords(conn);
                     }
                 } else {
                     retLinks.add(currentURL);
@@ -136,7 +132,8 @@ public class Spider {
                     }
                 }
             } catch (HttpStatusException | ValidationException e) {
-                continue;
+                System.err.println("Warning: Unable to crawl " + currentURL + ".");
+                e.printStackTrace();
             }
         }
         return retLinks;
