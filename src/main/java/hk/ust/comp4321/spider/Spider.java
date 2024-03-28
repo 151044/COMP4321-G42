@@ -99,6 +99,7 @@ public class Spider {
                         conn.insertDocument(doc);
 
                     }
+                    parentIDs.poll();
                     currDoc.retrieveFromWeb();
                     for (URL link : currDoc.children()) {
                         if (!visitedLinks.contains(link)) {
