@@ -5,6 +5,7 @@ import hk.ust.comp4321.db.DatabaseConnection;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.ValidationException;
 
 import java.io.IOException;
 import java.net.URL;
@@ -134,7 +135,7 @@ public class Spider {
                         }
                     }
                 }
-            } catch (HttpStatusException e) {
+            } catch (HttpStatusException | ValidationException e) {
                 continue;
             }
         }
