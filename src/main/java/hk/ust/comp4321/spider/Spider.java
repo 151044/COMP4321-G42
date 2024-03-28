@@ -79,17 +79,17 @@ public class Spider {
             try {
                 Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
 
-                retLinks.add(currentURL);
-                indexed++;
-                if (!parentIDs.isEmpty()) {
-                    conn.insertLink(parentIDs.poll(), currentURL);
-                }
-
                 Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
                 if (conn.hasDocUrl(currentURL)) {
                     Document currDoc = conn.getDocFromUrl(currentURL);
                     if (lastModifiedDate.isAfter(currDoc.lastModified())) {
+
+                        retLinks.add(currentURL);
+                        indexed++;
+                        if (!parentIDs.isEmpty()) {
+                            conn.insertLink(parentIDs.poll(), currentURL);
+                        }
                         Document doc = new Document(
                                 currentURL,
                                 currDoc.id(),
@@ -98,15 +98,22 @@ public class Spider {
                         );
                         conn.insertDocument(doc);
 
-                        for (URL link : doc.children()) {
-                            if (!visitedLinks.contains(link)) {
-                                visitedLinks.add(link);
-                                queue.add(link);
-                                parentIDs.add(doc.id());
-                            }
+                    }
+                    currDoc.retrieveFromWeb();
+                    for (URL link : currDoc.children()) {
+                        if (!visitedLinks.contains(link)) {
+                            visitedLinks.add(link);
+                            queue.add(link);
+                            parentIDs.add(currDoc.id());
                         }
                     }
                 } else {
+                    retLinks.add(currentURL);
+                    indexed++;
+                    if (!parentIDs.isEmpty()) {
+                        conn.insertLink(parentIDs.poll(), currentURL);
+                    }
+
                     int nextID = DatabaseConnection.nextDocId();
                     Document doc = new Document(
                             currentURL,
