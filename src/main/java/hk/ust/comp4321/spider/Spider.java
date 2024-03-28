@@ -29,6 +29,21 @@ public class Spider {
         this.base = base;
         this.conn = conn;
     }
+    /**
+     * Retrieves the page size through various means.
+     * @param response The response to retrieve from
+     * @return The size of the page
+     */
+    private Long retrievePageSize(Connection.Response response) {
+        if (response.hasHeader("Size")) {
+            return parseLong(response.header("Size"));
+        }
+        if (response.hasHeader("Content-Length")) {
+            return parseLong(response.header("Content-Length"));
+        }
+        // If there are no headers related to size, count the number of characters on the page
+        return (long) response.body().length();
+    }
 
     /**
      * Attempts to discover web pages from the specified URL.
@@ -74,7 +89,7 @@ public class Spider {
                     continue;
                 }
 
-                Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header("Last-Modified")));
+                Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
                 try {
                     Document currDoc = conn.getDocFromUrl(currentURL);
@@ -83,7 +98,7 @@ public class Spider {
                                 currentURL,
                                 currDoc.id(),
                                 lastModifiedDate,
-                                parseLong(response.header("Content-Length"))
+                                retrievePageSize(response)
                         );
                         conn.insertDocument(doc);
 
@@ -101,7 +116,7 @@ public class Spider {
                             currentURL,
                             nextID,
                             lastModifiedDate,
-                            parseLong(response.header("Content-Length"))
+                            retrievePageSize(response)
                     );
                     doc.retrieveFromWeb();
                     doc.writeWords(conn);
