@@ -64,7 +64,6 @@ public class Spider {
         Set<URL> visitedLinks = new HashSet<>();
         List<URL> retLinks = new ArrayList<>();
         Queue<URL> queue = new ArrayDeque<>();
-        Queue<Integer> parentIDs = new ArrayDeque<>();
 
         queue.add(url);
 
@@ -96,9 +95,6 @@ public class Spider {
 
                         retLinks.add(currentURL);
                         indexed++;
-                        if (!parentIDs.isEmpty()) {
-                            conn.insertLink(parentIDs.poll(), currentURL);
-                        }
                         Document doc = new Document(
                                 currentURL,
                                 currDoc.id(),
@@ -108,21 +104,17 @@ public class Spider {
                         conn.insertDocument(doc);
 
                     }
-                    parentIDs.poll();
                     currDoc.retrieveFromWeb();
                     for (URL link : currDoc.children()) {
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            parentIDs.add(currDoc.id());
+                            conn.insertLink(currDoc.id(), link);
                         }
                     }
                 } else {
                     retLinks.add(currentURL);
                     indexed++;
-                    if (!parentIDs.isEmpty()) {
-                        conn.insertLink(parentIDs.poll(), currentURL);
-                    }
 
                     int nextID = DatabaseConnection.nextDocId();
                     Document doc = new Document(
@@ -138,7 +130,7 @@ public class Spider {
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            parentIDs.add(nextID);
+                            conn.insertLink(nextID, link);
                         }
                     }
                 }
