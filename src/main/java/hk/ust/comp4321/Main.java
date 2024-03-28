@@ -1,18 +1,14 @@
 package hk.ust.comp4321;
 
 import hk.ust.comp4321.api.Document;
-import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.db.DatabaseConnection;
-import hk.ust.comp4321.nlp.NltkPorter;
+import hk.ust.comp4321.spider.Spider;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,7 +22,16 @@ public class Main {
      * @param args Command-line arguments; currently unused.
      */
     public static void main(String[] args) throws SQLException, IOException {
+        // Phase 1 - Spider
+        Path phaseOneDb = Path.of("spider_result.db");
+        Path phaseOneResult = Path.of("spider_result.txt");
 
+        DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
+        Spider spider = new Spider(new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"), conn);
+        spider.discover(30);
+        writeToFile(phaseOneDb, phaseOneResult, 30);
+
+        conn.close();
     }
 
     public static void writeToFile(Path dbPath, Path outputPath, int maxSize) throws SQLException, IOException {
