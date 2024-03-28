@@ -29,7 +29,7 @@ public class Main {
         DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
         Spider spider = new Spider(new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"), conn);
         spider.discover(30);
-        writeToFile(phaseOneDb, phaseOneResult, 10);
+        writeToFile(phaseOneDb, phaseOneResult, 30);
 
         conn.close();
     }
