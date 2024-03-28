@@ -69,3 +69,7 @@ If double-clicking on the JAR does not bring up anything, your Java environment 
 ```
 java -jar COMP4321-G42-Visualizer-1.0.jar
 ```
+
+## Phase 2
+In addition to the previous dependencies, new dependencies include:
+- Javalin 6.1.3 (Web Server)
