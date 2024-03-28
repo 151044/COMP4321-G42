@@ -56,6 +56,19 @@ tasks.register('dist', Jar) {
     with jar
 }
 
+tasks.register('dist-spider', Jar) {
+    manifest {
+        attributes 'Main-Class': "hk.ust.comp4321.spider.Spider"
+    }
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName = "COMP4321-G42-Spider"
+    with jar
+}
+
 tasks.register('dist-visualizer', Jar) {
     manifest {
         attributes 'Main-Class': "hk.ust.comp4321.db.visual.Visualizer"

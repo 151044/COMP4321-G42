@@ -26,23 +26,23 @@ The links are as follows:
 - https://dlcdn.apache.org/opennlp/models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin
 
 #### Main Runnable
-For the main project, create a runnable JAR as follows:
+For the spider, create a runnable JAR as follows:
 
 For Mac/Unix:
 ```
-./gradlew dist
+./gradlew dist-spider
 ```
 
 For Windows:
 ```
-.\gradlew.bat dist
+.\gradlew.bat dist-spider
 ```
 
 The runnable application JAR can be found under `build/libs`.
 
 If double-clicking on the JAR does not bring up anything, your Java environment may be misconfigured. Try to run it from the command line in the `build/libs` directory:
 ```
-java -jar COMP4321-G42-1.0.jar
+java -jar COMP4321-G42-Spider-1.0.jar
 ```
 
 The required output file is `spider_result.txt`, and the database is `spider_result.db`.
