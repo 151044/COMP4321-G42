@@ -4,8 +4,6 @@ import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.db.DatabaseConnection;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.net.URL;
 import java.time.Instant;
@@ -87,16 +85,13 @@ public class Spider {
                                 lastModifiedDate,
                                 parseLong(response.header("Content-Length"))
                         );
-                        doc.retrieveFromWeb();
                         conn.insertDocument(doc);
 
-                        Elements links = response.parse().select("a[href]");
-                        for (Element link : links) {
-                            URL linkURL = new URL(link.attr("abs:href"));
-                            if (!visitedLinks.contains(linkURL)) {
-                                visitedLinks.add(linkURL);
-                                queue.add(linkURL);
-                                parentIDs.add(currDoc.id());
+                        for (URL link : doc.children()) {
+                            if (!visitedLinks.contains(link)) {
+                                visitedLinks.add(link);
+                                queue.add(link);
+                                parentIDs.add(doc.id());
                             }
                         }
                     }
@@ -111,12 +106,10 @@ public class Spider {
                     doc.retrieveFromWeb();
                     doc.writeWords(conn);
 
-                    Elements links = response.parse().select("a[href]");
-                    for (Element link : links) {
-                        URL linkURL = new URL(link.attr("abs:href"));
-                        if (!visitedLinks.contains(linkURL)) {
-                            visitedLinks.add(linkURL);
-                            queue.add(linkURL);
+                    for (URL link : doc.children()) {
+                        if (!visitedLinks.contains(link)) {
+                            visitedLinks.add(link);
+                            queue.add(link);
                             parentIDs.add(nextID);
                         }
                     }
