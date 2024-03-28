@@ -5,6 +5,7 @@ import hk.ust.comp4321.db.DatabaseConnection;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -50,10 +51,10 @@ public class Spider {
      * @param threshold The integer threshold to stop crawling at
      * @return The List of discovered URLs
      */
-    public List<URL> discover(int threshold) {
+    public List<URL> discover(int threshold) throws IOException {
         return discover(base, threshold);
     }
-    private List<URL> discover(URL url, int threshold) {
+    private List<URL> discover(URL url, int threshold) throws IOException {
 
         // For BFS purposes
         // Update: There is no need to retain insertion order, but retLinks remains to not return visited dead links
@@ -76,65 +77,59 @@ public class Spider {
             // get current url
             URL currentURL = queue.poll();
 
-            try {
-                Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
+            Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
 
-                if (response.statusCode() == 200) {
-                    if (!parentIDs.isEmpty()) {
-                        retLinks.add(currentURL);
-                        conn.insertLink(parentIDs.poll(), currentURL);
-                        indexed++;
-                    }
-                } else {
-                    continue;
+            if (response.statusCode() == 200) {
+                if (!parentIDs.isEmpty()) {
+                    retLinks.add(currentURL);
+                    conn.insertLink(parentIDs.poll(), currentURL);
+                    indexed++;
                 }
+            } else {
+                continue;
+            }
 
-                Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
+            Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
-                try {
-                    Document currDoc = conn.getDocFromUrl(currentURL);
-                    if (lastModifiedDate.isAfter(currDoc.lastModified())) {
-                        Document doc = new Document(
-                                currentURL,
-                                currDoc.id(),
-                                lastModifiedDate,
-                                retrievePageSize(response)
-                        );
-                        conn.insertDocument(doc);
-
-                        for (URL link : doc.children()) {
-                            if (!visitedLinks.contains(link)) {
-                                visitedLinks.add(link);
-                                queue.add(link);
-                                parentIDs.add(doc.id());
-                            }
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    int nextID = DatabaseConnection.nextDocId();
+            if (conn.hasDocUrl(currentURL)) {
+                Document currDoc = conn.getDocFromUrl(currentURL);
+                if (lastModifiedDate.isAfter(currDoc.lastModified())) {
                     Document doc = new Document(
                             currentURL,
-                            nextID,
+                            currDoc.id(),
                             lastModifiedDate,
                             retrievePageSize(response)
                     );
-                    doc.retrieveFromWeb();
-                    doc.writeWords(conn);
+                    conn.insertDocument(doc);
 
                     for (URL link : doc.children()) {
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            parentIDs.add(nextID);
+                            parentIDs.add(doc.id());
                         }
                     }
                 }
-            }
-            catch (Exception e) {
-                continue;
+            } else {
+                int nextID = DatabaseConnection.nextDocId();
+                Document doc = new Document(
+                        currentURL,
+                        nextID,
+                        lastModifiedDate,
+                        retrievePageSize(response)
+                );
+                doc.retrieveFromWeb();
+                doc.writeWords(conn);
+
+                for (URL link : doc.children()) {
+                    if (!visitedLinks.contains(link)) {
+                        visitedLinks.add(link);
+                        queue.add(link);
+                        parentIDs.add(nextID);
+                    }
+                }
             }
         }
-
         return retLinks;
     }
 }
