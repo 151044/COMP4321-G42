@@ -29,14 +29,18 @@ jobs:
           distribution: 'temurin'
       - name: Download OpenNLP models
         run: data/download-models.sh
-      - name: Build Main Jar with Gradle
+      - name: Build Spider Jar with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: dist
+          arguments: dist-spider
       - name: Build Visualizer Jar with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: dist-visualizer
+      - name: Build Main Jar with Gradle
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: dist
       - name: Create Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
