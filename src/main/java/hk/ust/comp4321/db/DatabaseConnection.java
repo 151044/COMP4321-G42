@@ -152,6 +152,16 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Checks if a document exists in the database by its URL.
+     * @param url The document with corresponding URL to verify the existence of
+     * @return True if the document exists in the database; false otherwise
+     */
+    public boolean hasDocUrl(URL url) {
+        return create.fetchCount(DSL.table("Document"), DSL.condition(DSL.field(DSL.name("url")).eq(url.toString()))) > 0;
+    }
+
+
+    /**
      * Inserts a document into the database, or updates its last modified time
      * if it exists.
      *
