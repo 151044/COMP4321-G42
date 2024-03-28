@@ -5,6 +5,7 @@ import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.spider.Spider;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,7 +28,7 @@ public class Main {
         Path phaseOneResult = Path.of("spider_result.txt");
 
         DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
-        Spider spider = new Spider(new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"), conn);
+        Spider spider = new Spider(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), conn);
         spider.discover(30);
         writeToFile(phaseOneDb, phaseOneResult, 30);
 
