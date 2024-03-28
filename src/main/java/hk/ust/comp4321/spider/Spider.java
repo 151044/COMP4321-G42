@@ -19,7 +19,6 @@ import static java.lang.Long.parseLong;
 public class Spider {
     private final URL base;
     private final DatabaseConnection conn;
-    private int indexed = 0;
 
     /**
      * Constructs a new Spider.
@@ -56,6 +55,9 @@ public class Spider {
     }
     private List<URL> discover(URL url, int threshold) throws IOException {
 
+        // Reset indexed
+        int indexed = 0;
+
         // For BFS purposes
         // Update: There is no need to retain insertion order, but retLinks remains to not return visited dead links
         Set<URL> visitedLinks = new HashSet<>();
@@ -63,11 +65,7 @@ public class Spider {
         Queue<URL> queue = new ArrayDeque<>();
         Queue<Integer> parentIDs = new ArrayDeque<>();
 
-        // start
-        retLinks.add(url);
         queue.add(url);
-        visitedLinks.add(url);
-        indexed++;
 
         while (indexed < threshold) {
 
@@ -80,10 +78,10 @@ public class Spider {
             Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
 
             if (response.statusCode() == 200) {
+                retLinks.add(currentURL);
+                indexed++;
                 if (!parentIDs.isEmpty()) {
-                    retLinks.add(currentURL);
                     conn.insertLink(parentIDs.poll(), currentURL);
-                    indexed++;
                 }
             } else {
                 continue;
