@@ -3,6 +3,7 @@ package hk.ust.comp4321.spider;
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.db.DatabaseConnection;
 import org.jsoup.Connection;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
@@ -75,57 +76,57 @@ public class Spider {
             // get current url
             URL currentURL = queue.poll();
 
-            Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
+            try {
+                Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
 
-            if (response.statusCode() == 200) {
                 retLinks.add(currentURL);
                 indexed++;
                 if (!parentIDs.isEmpty()) {
                     conn.insertLink(parentIDs.poll(), currentURL);
                 }
-            } else {
-                continue;
-            }
 
-            Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
+                Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
-            if (conn.hasDocUrl(currentURL)) {
-                Document currDoc = conn.getDocFromUrl(currentURL);
-                if (lastModifiedDate.isAfter(currDoc.lastModified())) {
+                if (conn.hasDocUrl(currentURL)) {
+                    Document currDoc = conn.getDocFromUrl(currentURL);
+                    if (lastModifiedDate.isAfter(currDoc.lastModified())) {
+                        Document doc = new Document(
+                                currentURL,
+                                currDoc.id(),
+                                lastModifiedDate,
+                                retrievePageSize(response)
+                        );
+                        conn.insertDocument(doc);
+
+                        for (URL link : doc.children()) {
+                            if (!visitedLinks.contains(link)) {
+                                visitedLinks.add(link);
+                                queue.add(link);
+                                parentIDs.add(doc.id());
+                            }
+                        }
+                    }
+                } else {
+                    int nextID = DatabaseConnection.nextDocId();
                     Document doc = new Document(
                             currentURL,
-                            currDoc.id(),
+                            nextID,
                             lastModifiedDate,
                             retrievePageSize(response)
                     );
-                    conn.insertDocument(doc);
+                    doc.retrieveFromWeb();
+                    doc.writeWords(conn);
 
                     for (URL link : doc.children()) {
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            parentIDs.add(doc.id());
+                            parentIDs.add(nextID);
                         }
                     }
                 }
-            } else {
-                int nextID = DatabaseConnection.nextDocId();
-                Document doc = new Document(
-                        currentURL,
-                        nextID,
-                        lastModifiedDate,
-                        retrievePageSize(response)
-                );
-                doc.retrieveFromWeb();
-                doc.writeWords(conn);
-
-                for (URL link : doc.children()) {
-                    if (!visitedLinks.contains(link)) {
-                        visitedLinks.add(link);
-                        queue.add(link);
-                        parentIDs.add(nextID);
-                    }
-                }
+            } catch (HttpStatusException e) {
+                continue;
             }
         }
         return retLinks;
