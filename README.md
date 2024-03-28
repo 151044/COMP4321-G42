@@ -17,6 +17,15 @@ The Porter stemmer and the stopword list are translated from the equivalent Pyth
 This application requires Java 17 or later.
 
 ### Code Execution
+#### Before You Begin
+Please run the script `download-models.sh` in the `data` directory on Mac and Unix. Note that this requires `wget`, which should be bundled.
+
+For Windows, run `download-models.bat`. This assumes you are on Windows 10 or above and have `curl.exe`. If all else fails, download the data models directly from the source and place them in the data directory.
+The links are as follows:
+- https://dlcdn.apache.org/opennlp/models/ud-models-1.0/opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin
+- https://dlcdn.apache.org/opennlp/models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin
+
+#### Main Runnable
 For the main project, create a runnable JAR as follows:
 
 For Mac/Unix:
@@ -35,6 +44,12 @@ If double-clicking on the JAR does not bring up anything, your Java environment 
 ```
 java -jar COMP4321-G42-1.0.jar
 ```
+
+The required output file is `spider_result.txt`, and the database is `spider_result.db`.
+
+#### Database Visualizer
+
+In case you cannot open the SQLite file, we have prepared a visualizer for the database so its contents can be inspected as well.
 
 For the visualizer, create
 
