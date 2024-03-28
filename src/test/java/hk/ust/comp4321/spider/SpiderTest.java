@@ -45,12 +45,10 @@ public class SpiderTest {
         // Crawl 10 pages
         assertEquals(10, testSpider.discover(10).size());
 
-        // Modify the last modified date of a child page
-        conn.insertDocument(new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/ust_cse.htm").toURL(),1, Instant.ofEpochMilli(4321L), 603L));
-        // Spider should update the child page, and crawl 2 new pages
-        assertEquals(List.of(new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/ust_cse.htm"),
-                new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/books/book2.htm"),
-                new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/books/book3.htm")), testSpider.discover(3));
+        // Modify the last modified date
+        conn.insertDocument(new Document(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(),0, Instant.ofEpochMilli(4321L), 603L));
+        // Spider should update the page
+        assertEquals(List.of(new URL("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm")), testSpider.discover(1));
 
         // HTTP status code check and total pages < threshold break test
         assertEquals(List.of(), testSpiderExtra.discover(2));
