@@ -74,10 +74,19 @@ public class Spider {
                 break;
             }
             // get current url
+
             URL currentURL = queue.poll();
 
             try {
-                Connection.Response response = Jsoup.connect(currentURL.toString()).execute();
+                Connection currConnection = Jsoup.connect(currentURL.toString());
+
+                try {
+                    currConnection.execute();
+                } catch (IOException e) {
+                    continue;
+                }
+
+                Connection.Response response = currConnection.execute();
 
                 Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
