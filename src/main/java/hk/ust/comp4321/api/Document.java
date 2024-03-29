@@ -117,7 +117,7 @@ public final class Document {
         // Connect to the URL
         org.jsoup.Connection docConnection = Jsoup.connect(this.url.toString());
 
-        // Try to execute the request as a GET and parse the result
+        // Try to execute the request
         // If IOException is thrown, the document remains unloaded and exit the method immediately
         try {
             docConnection.execute();
@@ -136,7 +136,7 @@ public final class Document {
             return;
         }
 
-        // GET request successful. Continue web retrieval
+        // Request execution successful. Execute the request as a GET and parse the result
         org.jsoup.nodes.Document doc = docConnection.get();
 
         // Load text processor
