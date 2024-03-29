@@ -120,7 +120,7 @@ public final class Document {
         // Try to execute the request as a GET and parse the result
         // If IOException is thrown, the document remains unloaded and exit the method immediately
         try {
-            docConnection.get();
+            docConnection.execute();
         } catch (IOException ex) {
 //            if (ex instanceof MalformedURLException) {
 //                System.out.println("Malformed URL occurred. Unable to load page.");
