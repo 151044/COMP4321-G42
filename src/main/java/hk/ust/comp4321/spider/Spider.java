@@ -80,9 +80,10 @@ public class Spider {
 
             try {
                 Connection currConnection = Jsoup.connect(currentURL.toString());
+                org.jsoup.nodes.Document jsoupDoc;
 
                 try {
-                    currConnection.execute();
+                    jsoupDoc = currConnection.get();
                 } catch (IOException e) {
                     continue;
                 }
@@ -93,7 +94,7 @@ public class Spider {
 
                 if (conn.hasDocUrl(currentURL)) {
                     Document currDoc = conn.getDocFromUrl(currentURL);
-                    currDoc.retrieveFromWeb();
+                    currDoc.retrieveFromWeb(jsoupDoc);
                     for (URL link : currDoc.children()) {
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
@@ -125,7 +126,7 @@ public class Spider {
                             lastModifiedDate,
                             retrievePageSize(response)
                     );
-                    doc.retrieveFromWeb();
+                    doc.retrieveFromWeb(jsoupDoc);
                     doc.writeWords(conn);
 
                     for (URL link : doc.children()) {
@@ -156,7 +157,6 @@ public class Spider {
         Spider spider = new Spider(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), conn);
         spider.discover(30);
         writeToFile(phaseOneDb, phaseOneResult, 30);
-
         conn.close();
     }
 
