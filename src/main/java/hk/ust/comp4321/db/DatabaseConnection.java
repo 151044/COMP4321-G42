@@ -116,7 +116,8 @@ public class DatabaseConnection implements AutoCloseable {
                         return new Document(new URL(r.get(0, String.class)),
                                 r.get(1, Integer.class),
                                 r.get(2, Instant.class),
-                                r.get(3, Long.class));
+                                r.get(3, Long.class),
+                                r.get(4, String.class));
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
@@ -153,7 +154,8 @@ public class DatabaseConnection implements AutoCloseable {
                         return new Document(new URL(r.get(0, String.class)),
                                 r.get(1, Integer.class),
                                 r.get(2, Instant.class),
-                                r.get(3, Long.class));
+                                r.get(3, Long.class),
+                                r.get(4, String.class));
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
