@@ -7,6 +7,7 @@ import org.jooq.impl.DSL;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
@@ -63,6 +64,12 @@ public abstract class TableOperation {
     public abstract int getNextId();
 
     /**
+     * Gets the current word ID associated with this table type.
+     * @return The current maximum word ID
+     */
+    public abstract int getCurrentId();
+
+    /**
      * Transforms a table name into the prefixed form.
      * @param stem The word ID of the stem to transform
      * @return The prefixed string representing a table name in the database
@@ -94,7 +101,7 @@ public abstract class TableOperation {
         if (!hasWordId(stem)) {
             return List.of();
         } else {
-            return create.select()
+            return create.select(asterisk())
                     .from(DSL.table(DSL.name(getPrefix(stem))))
                     .fetch()
                     .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
@@ -215,7 +222,6 @@ public abstract class TableOperation {
      * @return True if the word ID for this type exists; false otherwise
      */
     public boolean hasWordId(int wordId) {
-        return create.fetchCount(DSL.table("WordIndex"), DSL.condition(DSL.field(DSL.name("wordId")).eq(wordId))
-                .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))) > 0;
+        return getCurrentId() >= wordId;
     }
 }

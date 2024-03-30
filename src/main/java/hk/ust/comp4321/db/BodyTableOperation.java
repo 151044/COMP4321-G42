@@ -34,4 +34,9 @@ class BodyTableOperation extends TableOperation {
     public int getNextId() {
         return nextWordId.getAndIncrement();
     }
+
+    @Override
+    public int getCurrentId() {
+        return nextWordId.get();
+    }
 }
