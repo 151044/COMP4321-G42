@@ -4,20 +4,16 @@ import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.TableOperation;
 import hk.ust.comp4321.nlp.*;
 import hk.ust.comp4321.util.StopWord;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
-import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * A class representing a single document, indexed by its URL.
@@ -110,33 +106,111 @@ public final class Document {
     }
 
     /**
+     * Retrieves the list of words in this document from the parsed Jsoup Document, which is already retrieved by
+     * the spider successfully using a GET request.
+     * @param jsoupDoc The webpage in Jsoup document form
+     */
+    public void retrieveFromWeb(org.jsoup.nodes.Document jsoupDoc) {
+        // Load text processor
+        TextProcessor textProcessor = TextProcessor.getInstance();
+
+        // Extract title sections
+        // Note: There must be exactly one title per HTMl file (i.e., one "paragraph" only)
+        title = jsoupDoc.select("title").text();
+        List<String> titleSentences = textProcessor.toSentence(title);
+        // Sentence level
+        for (int j = 0; j < titleSentences.size(); ++j) {
+            /*
+            For every sentence:
+            1. Tokenize the sentence
+            2. Filter out tokens that are all symbols
+            3. Turn all the tokens into lowercase
+             */
+            List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j))
+                    .stream()
+                    .filter(text -> !TextProcessor.isAllSymbols(text))
+                    .map(String::toLowerCase).toList();
+            // Word level
+            for (int k = 0; k < rawTitleWords.size(); ++k) {
+                String rawWord = rawTitleWords.get(k);
+                // Put the stem to the map if it is not a stop word
+                if (!StopWord.isStopWord(rawWord)) {
+                    String stemmedWord = NltkPorter.stem(rawWord);
+                    // Store empty string is the stemmed word is identical to the raw word
+                    if (stemmedWord.equals(rawWord)) {
+                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, ""), stemmedWord);
+                    } else {
+                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, rawWord), stemmedWord);
+                    }
+                }
+            }
+        }
+
+        // Extract body sections
+        Elements body = jsoupDoc.select("body");
+
+        // Note: A site can be empty
+        if (!body.isEmpty()) {
+            List<String> bodySections = body.get(0).children().stream().map(Element::text).toList();
+            // Paragraph level
+            for (int i = 0; i < bodySections.size(); ++i) {
+                List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
+                // Sentence level
+                for (int j = 0; j < bodySentences.size(); ++j) {
+                    List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j))
+                            .stream()
+                            .filter(text -> !TextProcessor.isAllSymbols(text))
+                            .map(String::toLowerCase).toList();
+                    // Word level
+                    for (int k = 0; k < rawBodyWords.size(); ++k) {
+                        String rawWord = rawBodyWords.get(k);
+                        if (!StopWord.isStopWord(rawWord)) {
+                            String stemmedWord = NltkPorter.stem(rawWord);
+                            if (stemmedWord.equals(rawWord)) {
+                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, ""), stemmedWord);
+                            } else {
+                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, rawWord), stemmedWord);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Extract links
+        Elements links = jsoupDoc.select("a[href]");
+        for (Element link : links) {
+            try {
+                this.children.add(URI.create(link.attr("abs:href")).toURL());
+            } catch (IllegalArgumentException | MalformedURLException ex) {
+//                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
+            }
+        }
+
+        // Document is completely loaded
+        isLoaded = true;
+    }
+
+    /**
      * Retrieves the list of words in this document by connecting and parsing the webpage.
      * @throws IOException If connecting or reading from the URL fails
+     * <p> Note that this method is only used for testing - instead of this method, the spider should get
+     * the Jsoup document and pass it to {@link #retrieveFromWeb(org.jsoup.nodes.Document)},
+     * given that the GET request is successful.
      */
     public void retrieveFromWeb() throws IOException {
         // Connect to the URL
         org.jsoup.Connection docConnection = Jsoup.connect(this.url.toString());
 
-        // Try to execute the request as a GET and parse the result
+        // Try to execute the request
         // If IOException is thrown, the document remains unloaded and exit the method immediately
         try {
-            docConnection.get();
+            docConnection.execute();
         } catch (IOException ex) {
-//            if (ex instanceof MalformedURLException) {
-//                System.out.println("Malformed URL occurred. Unable to load page.");
-//            } else if (ex instanceof HttpStatusException) {
-//                System.out.println("HTTP response is not OK and HTTP response errors are not ignored. Unable to load page.");
-//            } else if (ex instanceof UnsupportedMimeTypeException) {
-//                System.out.println("Unsupported mime type returned from HTTP response signals. Unable to load page.");
-//            } else if (ex instanceof SocketTimeoutException) {
-//                System.out.println("Connection timed out. Unable to load page.");
-//            } else {
-//                System.out.println("IOException thrown. Unable to load page.");
-//            }
             return;
         }
 
-        // GET request successful. Continue web retrieval
+        // Request execution successful. Execute the request as a GET and parse the result
         org.jsoup.nodes.Document doc = docConnection.get();
 
         // Load text processor
