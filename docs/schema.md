@@ -27,6 +27,15 @@ The document link table stores all the children of an indexed document. `docId` 
 
 The word index table stores all information related to a word, its stemmed form, and the word ID. `typePrefix` can either be `title` or `body`, and is used to distinguish between word IDs for text in the document tag and text in the body tag.
 
+## Forward Index (ForwardIndex)
+| Field Name | Data Type        | Is Primary Key |
+|------------|------------------|----------------|
+| docId      | Integer          | True           |
+| wordId     | Integer          | True           |
+| typePrefix | Varchar (String) | True           |
+
+The forward index speeds up document retrieval by allowing the program to know which word tables to look up from.
+
 ## Word Table(s)
 Note: Tables for stems in the body are named `body_{wordId}`.
 For example, one such table might be `body_1`.

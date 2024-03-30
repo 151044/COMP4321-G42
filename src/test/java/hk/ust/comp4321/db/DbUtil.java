@@ -42,15 +42,6 @@ public class DbUtil {
                 .column("suffix", VARCHAR)
                 .execute());
 
-        create.createTableIfNotExists("WordIndex")
-                .column("stem", VARCHAR)
-                .column("wordId", INTEGER)
-                .column("typePrefix", VARCHAR)
-                .constraints(
-                        DSL.primaryKey("wordId", "typePrefix")
-                )
-                .execute();
-
         List<DbUtil.WordIndexEntry> wordIndices = List.of(
                 new WordIndexEntry("comput", 0, "body"),
                 new WordIndexEntry("comput", 0, "title"),
@@ -98,6 +89,16 @@ public class DbUtil {
         links.forEach(l -> create.insertInto(DSL.table("DocumentLink"))
                 .values(l.get(0), docs.get(l.get(1)).url().toString()).execute());
 
+        List<ForwardIndexEntry> forwardEntries = List.of(
+                new ForwardIndexEntry(0, 0, "title"),
+                new ForwardIndexEntry(0, 0, "body"),
+                new ForwardIndexEntry(0, 1, "body")
+        );
+
+        forwardEntries.forEach(e -> create.insertInto(DSL.table("ForwardIndex"))
+                .values(e.docId, e.wordId, e.prefix).execute());
+
+
         conn.close();
 
         /*
@@ -109,4 +110,5 @@ public class DbUtil {
         return conn;
     }
     public record WordIndexEntry(String stem, int id, String prefix) {}
+    public record ForwardIndexEntry(int docId, int wordId, String prefix) {}
 }

@@ -20,7 +20,10 @@ public class VisualizerFrame extends JFrame {
             new TypedTable("DocumentLink", List.of(Integer.class, String.class),
                     List.of("docId", "childUrl")),
             new TypedTable("WordIndex", List.of(String.class, Integer.class, String.class),
-                    List.of("stem", "wordId", "typePrefix")));
+                    List.of("stem", "wordId", "typePrefix")),
+            new TypedTable("ForwardIndex", List.of(Integer.class, Integer.class, String.class),
+                    List.of("docId", "wordId", "typePrefix"))
+    );
     /**
      * Creates a new VisualizerFrame to display database tables.
      * @param create The DSLContext to run SQL queries with

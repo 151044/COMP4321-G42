@@ -64,10 +64,9 @@ class DatabaseConnectionTest {
         assertDoesNotThrow(() -> conn.deleteFrequencies(1000)); // deleting nonexistent ID does not fail
         conn.deleteFrequencies(0);
         TableOperation bodyOperator = conn.bodyOperator();
-        assertTrue(bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput"))
-                .stream().noneMatch(w -> w.docId() == 0)); // body tables don't have docId == 0
-        assertTrue(bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput")).stream().noneMatch(w -> w.docId() == 0)); // title table don't have docId == 0
-        assertEquals(2, bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput")).size()); // 2 frequency records remaining
+        assertEquals(0, bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput"), 0).size()); // body tables don't have docId == 0
+        assertEquals(0, bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput"), 0).size()); // title table don't have docId == 0
+        assertEquals(2, bodyOperator.getFrequency(bodyOperator.getIdFromStem("comput"), 1).size()); // 2 frequency records remaining
     }
 
     @Test

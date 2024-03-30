@@ -81,14 +81,16 @@ public class Spider {
             try {
                 Connection currConnection = Jsoup.connect(currentURL.toString());
                 org.jsoup.nodes.Document jsoupDoc;
+                Connection.Response response;
 
                 try {
-                    jsoupDoc = currConnection.get();
+                    response = currConnection.execute();
+                    jsoupDoc = response.parse();
                 } catch (IOException e) {
+                    System.err.println("Unable to connect to " + currentURL);
+                    e.printStackTrace();
                     continue;
                 }
-
-                Connection.Response response = currConnection.execute();
 
                 Instant lastModifiedDate = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(response.header(response.hasHeader("Last-Modified") ? "Last-Modified" : "Date")));
 
@@ -137,7 +139,7 @@ public class Spider {
                         }
                     }
                 }
-            } catch (HttpStatusException | ValidationException e) {
+            } catch (ValidationException e) {
                 System.err.println("Warning: Unable to crawl " + currentURL + ".");
                 e.printStackTrace();
             }
@@ -152,6 +154,8 @@ public class Spider {
         // Phase 1 - Spider
         Path phaseOneDb = Path.of("spider_result.db");
         Path phaseOneResult = Path.of("spider_result.txt");
+
+        Files.deleteIfExists(phaseOneDb);
 
         DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
         Spider spider = new Spider(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), conn);
