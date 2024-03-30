@@ -7,7 +7,6 @@ import org.jooq.impl.DSL;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.SQLDataType.INTEGER;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
@@ -60,14 +59,6 @@ public abstract class TableOperation {
                 .map(r -> r.get(2, String.class))
                 .stream().filter(s -> s.startsWith(getPrefix() + "_"))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Gets the word IDs associated with this prefix.
-     * @return The list of word IDs with the prefix
-     */
-    public List<Integer> getStemIds() {
-        return getTableNames().stream().map(s -> s.replace(getPrefix() + "_", "")).map(Integer::parseInt).toList();
     }
 
     /**

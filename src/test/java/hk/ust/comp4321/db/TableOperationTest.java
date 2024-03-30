@@ -43,12 +43,12 @@ class TableOperationTest {
 
     @Test
     void getStemIds() {
-        assertEquals(4, body.getStemIds().size());
-        assertEquals(3, title.getStemIds().size());
+        assertEquals(2, body.getStemIds(0).size());
+        assertEquals(1, title.getStemIds(0).size());
 
         conn.deleteFrequencies(0);
-        assertEquals(4, body.getStemIds().size());
-        assertEquals(3, title.getStemIds().size());
+        assertEquals(2, body.getStemIds(0).size());
+        assertEquals(1, title.getStemIds(0).size());
     }
 
     @Test
