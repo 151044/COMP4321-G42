@@ -16,7 +16,7 @@ import java.awt.*;
 public class TableSelectorPanel extends JPanel {
     private GridBagConstraints cons = new GridBagConstraints();
     private static final List<String> TYPES = List.of("body", "title");
-    private static final List<String> EXCLUDED = List.of("Document", "DocumentLink", "WordIndex");
+    private static final List<String> EXCLUDED = List.of("Document", "DocumentLink", "WordIndex", "ForwardIndex");
     private TablePanel tablePanel = null;
     private JComboBox<String> stemName;
     private JComboBox<String> tableType = new JComboBox<>(TYPES.toArray(new String[]{}));
