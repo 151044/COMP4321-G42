@@ -86,7 +86,8 @@ public class DatabaseConnection implements AutoCloseable {
                 .column("wordId", INTEGER)
                 .column("typePrefix", VARCHAR)
                 .constraints(
-                        DSL.primaryKey("wordId", "typePrefix")
+                        DSL.primaryKey("docId", "wordId", "typePrefix"),
+                        DSL.foreignKey("docId").references("Document", "docId")
                 )
                 .execute();
 
