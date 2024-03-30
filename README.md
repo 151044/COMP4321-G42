@@ -18,14 +18,14 @@ This application requires Java 17 or later.
 
 ### Code Execution
 #### Before You Begin
-Please run the script `download-models.sh` in the `data` directory on Mac and Unix. Note that this requires `wget`, which should be bundled.
+Please run the script `download-models.sh` in the `data` directory on Mac and *nix. Note that this requires `wget`, which should be bundled with most *nix distributions or Macs.
 
-For Windows, run `download-models.bat`. This assumes you are on Windows 10 or above and have `curl.exe`. If all else fails, download the data models directly from the source and place them in the data directory.
+For Windows, run `download-models.bat`. This assumes you are on Windows 10 or above and have `curl.exe`. If all else fails, download the data models directly from the source and place them in the `data` directory.
 The links are as follows:
 - https://dlcdn.apache.org/opennlp/models/ud-models-1.0/opennlp-en-ud-ewt-sentence-1.0-1.9.3.bin
 - https://dlcdn.apache.org/opennlp/models/ud-models-1.0/opennlp-en-ud-ewt-tokens-1.0-1.9.3.bin
 
-#### Main Runnable
+#### Test Program Generation
 For the spider, create a runnable JAR as follows:
 
 For Mac/Unix:
