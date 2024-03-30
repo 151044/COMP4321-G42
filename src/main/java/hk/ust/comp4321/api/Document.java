@@ -82,7 +82,7 @@ public final class Document {
     public void retrieveFromDatabase(DatabaseConnection conn) throws SQLException {
         // Load titleFrequencies
         TableOperation titleTable = conn.titleOperator();
-        List<Integer> titleStemIds = titleTable.getStemIds();
+        List<Integer> titleStemIds = titleTable.getStemIds(id);
         for (int stemId: titleStemIds) {
             List<WordInfo> titleInfoList = titleTable.getFrequency(stemId, id);
             String stem = titleTable.getStemFromId(stemId);
@@ -93,7 +93,7 @@ public final class Document {
 
         // Load bodyFrequencies
         TableOperation bodyTable = conn.bodyOperator();
-        List<Integer> bodyStemIds = bodyTable.getStemIds();
+        List<Integer> bodyStemIds = bodyTable.getStemIds(id);
         for (int stemId: bodyStemIds) {
             List<WordInfo> bodyInfoList = bodyTable.getFrequency(stemId, id);
             String stem = bodyTable.getStemFromId(stemId);

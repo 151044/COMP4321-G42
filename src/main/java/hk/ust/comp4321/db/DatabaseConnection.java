@@ -81,6 +81,15 @@ public class DatabaseConnection implements AutoCloseable {
                 )
                 .execute();
 
+        create.createTableIfNotExists("ForwardIndex")
+                .column("docId", INTEGER)
+                .column("wordId", INTEGER)
+                .column("typePrefix", VARCHAR)
+                .constraints(
+                        DSL.primaryKey("wordId", "typePrefix")
+                )
+                .execute();
+
         if (nextDocId == null) {
             nextDocId = new AtomicInteger(create.fetchCount(DSL.table("Document")));
         }

@@ -33,6 +33,24 @@ public abstract class TableOperation {
      * @return The prefix of this kind of table operation
      */
     public abstract String getPrefix();
+
+    /**
+     * Gets the next word ID for this prefix.
+     *
+     * @implNote It is expected that subclasses will use static
+     * fields to maintain consistency for IDs. Hence, this method
+     * is abstract in order to allow for the same ID with different
+     * prefixes.
+     * @return The next word ID to allocate for this prefix
+     */
+    public abstract int getNextId();
+
+    /**
+     * Gets the current word ID associated with this table type.
+     * @return The current maximum word ID
+     */
+    public abstract int getCurrentId();
+
     /**
      * Gets all the table names associated with this kind of database.
      * @return The list of raw table names in the database satisfying some criteria
@@ -53,21 +71,17 @@ public abstract class TableOperation {
     }
 
     /**
-     * Gets the next word ID for this prefix.
-     *
-     * @implNote It is expected that subclasses will use static
-     * fields to maintain consistency for IDs. Hence, this method
-     * is abstract in order to allow for the same ID with different
-     * prefixes.
-     * @return The next word ID to allocate for this prefix
+     * Gets the word IDs associated with this prefix, filtered by document ID.
+     * @return The list of word IDs with the prefix
      */
-    public abstract int getNextId();
-
-    /**
-     * Gets the current word ID associated with this table type.
-     * @return The current maximum word ID
-     */
-    public abstract int getCurrentId();
+    public List<Integer> getStemIds(int docId) {
+        return create.select(DSL.field(DSL.name("wordId")))
+                .from(DSL.table(DSL.name("ForwardIndex")))
+                .where(DSL.condition(DSL.field(DSL.name("typePrefix")).eq(getPrefix()))
+                        .and(DSL.field(DSL.name("docId")).eq(docId)))
+                .fetch()
+                .map(r -> r.get(0, Integer.class));
+    }
 
     /**
      * Transforms a table name into the prefixed form.
@@ -89,25 +103,11 @@ public abstract class TableOperation {
                 .values(freq.docId(), freq.paragraph(), freq.sentence(), freq.wordLocation(), freq.rawWord())
                 .onDuplicateKeyIgnore()
                 .execute();
-    }
-    /**
-     * Finds the corresponding title word frequencies of the stem in this kind of table only.
-     *
-     * @param stem The word ID representing the stem to find the word frequencies for
-     * @return The list of word frequencies associated with this stem, or an empty
-     * list if the word does not exist in the database
-     */
-    public List<WordInfo> getFrequency(int stem) {
-        if (!hasWordId(stem)) {
-            return List.of();
-        } else {
-            return create.select(asterisk())
-                    .from(DSL.table(DSL.name(getPrefix(stem))))
-                    .fetch()
-                    .stream().map(r -> new WordInfo(r.get(0, Integer.class), r.get(1, Integer.class),
-                            r.get(2, Integer.class), r.get(3, Integer.class), r.get(4, String.class)))
-                    .toList();
-        }
+
+        create.insertInto(DSL.table(DSL.name("ForwardIndex")))
+                .values(freq.docId(), stem, getPrefix())
+                .onDuplicateKeyIgnore()
+                .execute();
     }
 
     /**

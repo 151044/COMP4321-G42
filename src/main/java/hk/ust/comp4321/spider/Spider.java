@@ -152,6 +152,8 @@ public class Spider {
         Path phaseOneDb = Path.of("spider_result.db");
         Path phaseOneResult = Path.of("spider_result.txt");
 
+        Files.deleteIfExists(phaseOneDb);
+
         DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
         Spider spider = new Spider(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), conn);
         spider.discover(30);
