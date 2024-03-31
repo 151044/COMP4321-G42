@@ -3,7 +3,6 @@ package hk.ust.comp4321.spider;
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.db.DatabaseConnection;
 import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.ValidationException;
 
@@ -57,7 +56,7 @@ public class Spider {
      * @param threshold The integer threshold to stop crawling at
      * @return The List of discovered URLs
      */
-    public List<URL> discover(int threshold) throws IOException {
+    public List<URL> discover(int threshold) {
         // Reset indexed
         int indexed = 0;
 
@@ -98,10 +97,10 @@ public class Spider {
                     Document currDoc = conn.getDocFromUrl(currentURL);
                     currDoc.retrieveFromWeb(jsoupDoc);
                     for (URL link : currDoc.children()) {
+                        conn.insertLink(currDoc.id(), link);
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            conn.insertLink(currDoc.id(), link);
                         }
                     }
                     if (lastModifiedDate.isAfter(currDoc.lastModified())) {
@@ -132,10 +131,10 @@ public class Spider {
                     doc.writeWords(conn);
 
                     for (URL link : doc.children()) {
+                        conn.insertLink(nextID, link);
                         if (!visitedLinks.contains(link)) {
                             visitedLinks.add(link);
                             queue.add(link);
-                            conn.insertLink(nextID, link);
                         }
                     }
                 }
