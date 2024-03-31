@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.ValidationException;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.Long.parseLong;
 
@@ -78,7 +80,7 @@ public class Spider {
             URL currentURL = queue.poll();
 
             try {
-                Connection currConnection = Jsoup.connect(currentURL.toString());
+                Connection currConnection = Jsoup.connect(currentURL.toString()).timeout(5000);
                 org.jsoup.nodes.Document jsoupDoc;
                 Connection.Response response;
 
@@ -182,7 +184,9 @@ public class Spider {
                     sb.append(d.title()).append("\n");
                     sb.append(d.url().toString()).append("\n");
                     sb.append(d.lastModified()).append(", ").append(d.size()).append("\n");
-                    Map<String, Long> frequencies = d.bodyFrequencies().entrySet().stream()
+                    Map<String, Long> frequencies =
+                            Stream.concat(d.bodyFrequencies().entrySet().stream(),
+                            d.titleFrequencies().entrySet().stream())
                             .map(s -> s.getKey().rawWord().isEmpty() ?
                                     s.getValue() : s.getKey().rawWord())
                             .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
