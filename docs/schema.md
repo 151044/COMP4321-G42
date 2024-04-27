@@ -34,7 +34,8 @@ The word index table stores all information related to a word, its stemmed form,
 | wordId     | Integer          | True           |
 | typePrefix | Varchar (String) | True           |
 
-The forward index speeds up document retrieval by allowing the program to know which word tables to look up from.
+The forward index speeds up document retrieval by allowing the program to know which word tables to look up from. It
+stores the word ID that each document has, as well as whether the word ID is for the title or the body of the document.
 
 ## Word Table(s)
 Note: Tables for stems in the body are named `body_{wordId}`.
