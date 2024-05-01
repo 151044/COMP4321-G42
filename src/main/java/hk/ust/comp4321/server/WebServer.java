@@ -27,6 +27,10 @@ public class WebServer {
                     terms = NltkPorter.stem(terms);
                     TableOperation op = conn.bodyOperator();
                     int wordId = op.getIdFromStem(terms);
+                    if (wordId == -1) {
+                        ctx.html(getErrorPage(terms));
+                        return;
+                    }
                     List<WordInfo> wordInfo = op.getFrequency(wordId);;
                     ctx.html(getQueryAnswer(wordInfo.stream().map(WordInfo::docId).distinct()
                             .map(conn::getDocFromId)
@@ -43,8 +47,7 @@ public class WebServer {
     private static String getQueryAnswer(List<Document> doc, String term) {
         String result = doc.stream().map(d -> "<h2>" + d.title() + "</h2><br><a href=" + d.url() + ">" + d.url() + "</a>")
                 .collect(Collectors.joining());
-        return
-"""
+        return """
 <!DOCTYPE html>
 <html>
 <head>
@@ -52,9 +55,40 @@ public class WebServer {
 </head>
 
 <body>
+Search again? <br>
+%s
 <h1>Search Results for %s:</h1>
 %s
 </body>
-""".formatted(term, term, result);
+""".formatted(term, getSearchBox(), term, result);
+    }
+
+    private static String getErrorPage(String term) {
+        return """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results for %s</title>
+</head>
+
+<body>
+<h2>There are no such terms :( </h2>
+%s
+</body>
+                """.formatted(term, getSearchBox());
+    }
+
+    private static String getSearchBox() {
+        return """
+<form action="/search" method="POST">
+    <div>
+        <label for="word">Search: </label>
+        <input name="word" id="word" value="" />
+    </div>
+    <div>
+        <button>Send Query</button>
+    </div>
+</form>
+                """;
     }
 }
