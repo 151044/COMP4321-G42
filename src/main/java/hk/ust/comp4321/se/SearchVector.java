@@ -24,6 +24,9 @@ public class SearchVector {
             throw new IllegalArgumentException("Term-weight length mismatch: The term length is %d while the weight length is %d"
                     .formatted(terms.size(), weights.size()));
         }
+        for (int i = 0; i < terms.size(); i++) {
+            vector.put(terms.get(i), weights.get(i));
+        }
     }
 
     /**
