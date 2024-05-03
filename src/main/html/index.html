@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> %s - Group 42 Search Engine</title>
+</head>
+<style>
+    body {
+        display: block;
+        justify-content: space-around;
+        align-items: center;
+        font-size: 18px;
+        background-color: #daebf1;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .title {
+        margin: 0;
+        padding-top: 5em;
+        padding-bottom: 1em;
+        text-align: center;
+        color: black;
+    }
+    form {
+        width: 100%;
+        text-align: center;
+    }
+    input {
+        width: 100%;
+        padding: 0.5em;
+        font-size: 1em;
+        border-radius: 6px;
+        height: 50px;
+        text-indent: 0.25em;
+        border: none;
+        outline: solid lightgrey;
+        background-color: rgba(255,255,255,0.7);
+        transition: all 0.2s ease;
+    }
+    input:focus,
+    input:active {
+        outline: none;
+        background-color: rgba(255,255,255,0.9);
+    }
+    .input-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 70%;
+        margin: 0 auto;
+        max-width: 680px;
+    }
+    button {
+        width: 50%;
+        max-width: 150px;
+        color: black;
+        background-color: rgba(220, 220, 220, 1.0);
+        padding: 0.7em;
+        font-size: 1em;
+        border: none;
+        border-radius: 6px;
+        margin: 1em 0;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        box-shadow: 0 5px 5px rgba(0, 0, 0, 0.5);
+        font-family: 'Open Sans', sans-serif;
+    }
+    button:active,
+    button:hover{
+        transform: translateY(5px);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+    button:active,
+    button:focus {
+        outline: none;
+    }
+</style>
+<body>
+<h1 class="title">Search Engine</h1>
+<form id="homeSearchForm", action="/homeSearch" method="POST">
+    <div class="input-container">
+        <label for="queryText"></label>
+        <input type="text" name="queryText" id="queryText" placeholder="Search"/>
+    </div>
+    <div>
+        <button class="searchButton">Search</button>
+    </div>
+</form>
+</body>

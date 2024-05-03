@@ -161,7 +161,7 @@ public class Spider {
         DatabaseConnection conn = new DatabaseConnection(phaseOneDb);
         Spider spider = new Spider(URI.create("https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm").toURL(), conn);
         spider.discover(30);
-        writeToFile(phaseOneDb, phaseOneResult, 30);
+        writeToFile(phaseOneDb, phaseOneResult, 30); // This line is the one which reads from the database
         conn.close();
     }
 
