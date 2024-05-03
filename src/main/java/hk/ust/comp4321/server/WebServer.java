@@ -54,7 +54,8 @@ public class WebServer {
                     TableOperation op = conn.bodyOperator();
                     int wordId = op.getIdFromStem(query);
                     if (wordId == -1) {
-                        ctx.html(getErrorPage(query));
+                        currentPage = getErrorPage(query);
+                        ctx.html(currentPage);
                         return;
                     }
 
@@ -89,7 +90,8 @@ public class WebServer {
                     TableOperation op = conn.bodyOperator();
                     int wordId = op.getIdFromStem(query);
                     if (wordId == -1) {
-                        ctx.html(getErrorPage(query));
+                        currentPage = getErrorPage(query);
+                        ctx.html(currentPage);
                         return;
                     }
 
@@ -290,7 +292,7 @@ public class WebServer {
                     height: 45px;
                     color: black;
                     background-color: #daebf1;
-                    padding: 0.3em;
+                    padding-left: 0.3em;
                     font-size: 1.5em;
                     font-weight: bold;
                     border: none;
