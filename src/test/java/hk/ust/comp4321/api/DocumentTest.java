@@ -2,6 +2,7 @@ package hk.ust.comp4321.api;
 
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.DbUtil;
+import hk.ust.comp4321.se.SearchVector;
 import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -174,5 +175,21 @@ public class DocumentTest {
         Document testDoc3 = new Document(URI.create("https://www.math.hkust.edu.hk/~makyli/art6.pdf").toURL(), DatabaseConnection.nextDocId(), Instant.now(), -69420L);
         testDoc3.retrieveFromWeb();
         assertFalse(testDoc3.isLoaded());
+    }
+
+    @Test
+    void asBodyVector() throws SQLException {
+        Document doc = conn.getDocFromId(1);
+        doc.retrieveFromDatabase(conn);
+        assertTrue(doc.asBodyVector(conn).cosineSim(new SearchVector("comput")) > 0);
+        assertEquals(0, doc.asBodyVector(conn).cosineSim(new SearchVector("locat")));
+    }
+
+    @Test
+    void asTitleVector() throws SQLException {
+        Document doc = conn.getDocFromId(0);
+        doc.retrieveFromDatabase(conn);
+        assertEquals(0, doc.asTitleVector(conn).cosineSim(new SearchVector("locat")));
+        assertTrue(doc.asTitleVector(conn).cosineSim(new SearchVector("comput")) > 0);
     }
 }
