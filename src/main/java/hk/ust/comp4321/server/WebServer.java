@@ -5,6 +5,9 @@ import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.TableOperation;
 import hk.ust.comp4321.nlp.NltkPorter;
+import hk.ust.comp4321.se.SearchEngine;
+import hk.ust.comp4321.se.SearchVector;
+import hk.ust.comp4321.util.Tuple;
 import io.javalin.Javalin;
 
 import java.io.IOException;
@@ -33,6 +36,15 @@ public class WebServer {
     private static String currentPage = getHomePage();
 
     public static void main(String[] args) throws IOException, SQLException {
+        List<Document> docs = conn.getDocuments();
+        docs.forEach(d -> {
+            try {
+                d.retrieveFromDatabase(conn);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        SearchEngine engine = new SearchEngine(conn, docs);
         Javalin app = Javalin.create()
                 .get("/", ctx -> {
                     ctx.html(getHomePage());
@@ -50,30 +62,11 @@ public class WebServer {
                         return;
                     }
 
-                    query = NltkPorter.stem(query);
-                    TableOperation op = conn.bodyOperator();
-                    int wordId = op.getIdFromStem(query);
-                    if (wordId == -1) {
-                        ctx.html(getErrorPage(query));
-                        return;
-                    }
+                    SearchVector vectorQuery = new SearchVector(query);
+                    List<Tuple<Document, Double>> search = engine.search(vectorQuery);
 
-                    List<WordInfo> wordInfo = op.getFrequency(wordId);
-
-                    List<Document> results = wordInfo.stream()
-                                                    .map(WordInfo::docId)
-                                                    .distinct()
-                                                    .map(conn::getDocFromId)
-                                                    .peek(x -> {
-                                                        try {
-                                                            x.retrieveFromDatabase(conn);
-                                                        } catch (SQLException e) {
-                                                            throw new RuntimeException(e);
-                                                        }
-                                                    })
-                                                    .toList();
                     long end = System.currentTimeMillis();
-                    currentPage = getSearchPage(query, results.size(), (double)(end - start) / 1000, results);
+                    currentPage = getSearchPage(query, search.size(), (double)(end - start) / 1000, search);
                     ctx.html(currentPage);
                 })
                 .post("/searchSearch", ctx -> {
@@ -85,31 +78,14 @@ public class WebServer {
                         return;
                     }
 
-                    query = NltkPorter.stem(query);
-                    TableOperation op = conn.bodyOperator();
-                    int wordId = op.getIdFromStem(query);
-                    if (wordId == -1) {
-                        ctx.html(getErrorPage(query));
-                        return;
-                    }
+                    SearchVector vectorQuery = new SearchVector(query);
+                    List<Tuple<Document, Double>> search = engine.search(vectorQuery);
+                    System.out.println(query);
+                    System.out.println(search);
 
-                    List<WordInfo> wordInfo = op.getFrequency(wordId);
-
-                    List<Document> results = wordInfo.stream()
-                            .map(WordInfo::docId)
-                            .distinct()
-                            .map(conn::getDocFromId)
-                            .peek(x -> {
-                                try {
-                                    x.retrieveFromDatabase(conn);
-                                } catch (SQLException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            })
-                            .toList();
                     long end = System.currentTimeMillis();
-
-                    ctx.html(getSearchPage(query, results.size(), (double)(end - start) / 1000, results));
+                    currentPage = getSearchPage(query, search.size(), (double)(end - start) / 1000, search);
+                    ctx.html(currentPage);
                 });
         app.get("/shutdown", ctx -> {
             ctx.html("Shutting down...");
@@ -455,11 +431,11 @@ public class WebServer {
                """.formatted(score, doc.title(), pageURL, pageURL, lastModified, doc.size(), keyWords, parentLinks, childLinks);
     }
 
-    private static String getSearchResultPages(List<Document> docs) {
-        return docs.stream().map(d -> getSearchResultPageItem(6.9, d)).collect(Collectors.joining("\n"));
+    private static String getSearchResultPages(List<Tuple<Document, Double>> docs) {
+        return docs.stream().map(d -> getSearchResultPageItem(d.right(), d.left())).collect(Collectors.joining("\n"));
     }
 
-    private static String getSearchPage(String query, int n, double t, List<Document> docs) {
+    private static String getSearchPage(String query, int n, double t, List<Tuple<Document, Double>> docs) {
         return """
                 <!DOCTYPE html>
                 <html>
