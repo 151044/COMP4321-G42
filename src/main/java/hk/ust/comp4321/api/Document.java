@@ -3,10 +3,12 @@ package hk.ust.comp4321.api;
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.db.TableOperation;
 import hk.ust.comp4321.nlp.*;
+import hk.ust.comp4321.se.SearchVector;
 import hk.ust.comp4321.util.StopWord;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -14,6 +16,8 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * A class representing a single document, indexed by its URL.
@@ -405,6 +409,37 @@ public final class Document {
      */
     public String title() {
         return title;
+    }
+
+    /**
+     * Converts the title s of this document into a search query.
+     * @param conn The database connection to look up this document in
+     * @return The search vector corresponding to the titles in this document
+     */
+    public SearchVector asTitleVector(DatabaseConnection conn) {
+        return termWeights(titleFrequencies, conn.titleOperator());
+    }
+
+    /**
+     * Converts the body of this document into a search query.
+     * @param conn The database connection to look up this document in
+     * @return The search vector corresponding to the body in this document
+     */
+    public SearchVector asBodyVector(DatabaseConnection conn) {
+        return termWeights(bodyFrequencies, conn.bodyOperator());
+    }
+
+    private SearchVector termWeights(Map<WordInfo, String> info, TableOperation op) {
+        Map<String, Long> values = info.values().stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        long maxTerm = values.values().stream().max(Long::compare).orElse(0L);
+        if (maxTerm == 0) {
+            return new SearchVector(List.of(), List.of());
+        }
+        List<Map.Entry<String, Long>> l = values.entrySet().stream().toList();
+        return new SearchVector(l.stream().map(Map.Entry::getKey).toList(),
+                l.stream().map(e -> e.getValue() * (Math.log((double) DatabaseConnection.getDocSize() /
+                        op.docFreq(e.getKey())) / Math.log(2)) / maxTerm).toList());
     }
 
     @Override

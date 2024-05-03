@@ -12,7 +12,9 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.sql.*;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.jooq.impl.SQLDataType.*;
@@ -312,6 +314,14 @@ public class DatabaseConnection implements AutoCloseable {
      */
     public TableOperation titleOperator() {
         return new TitleTableOperation(create);
+    }
+
+    /**
+     * Gets the current number of documents.
+     * @return The current number of documents in the database
+     */
+    public static long getDocSize() {
+        return nextDocId.get();
     }
 
     /**

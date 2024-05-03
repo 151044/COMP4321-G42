@@ -4,7 +4,9 @@ import hk.ust.comp4321.api.WordInfo;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.jooq.impl.SQLDataType.INTEGER;
@@ -225,6 +227,36 @@ public abstract class TableOperation {
                             ).execute();
                     return next;
                 });
+    }
+
+    /**
+     * Gets all the unique document IDs matching the specified stem ID.
+     * @param stemId The stem ID to search for
+     * @return The list of all unique document IDs matching this stem
+     */
+    public List<Integer> getDocIdsWithStem(int stemId) {
+        return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("ForwardIndex"))).where(
+                DSL.condition(DSL.field(DSL.name("wordId")).eq(stemId))
+                        .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix())))
+                .fetch()
+                .stream()
+                .map(r -> r.get(0, Integer.class))
+                .distinct()
+                .toList();
+    }
+
+    /**
+     * Gets the document frequency of the specified (stemmed) word.
+     * Counts the number of documents containing the word given.
+     * @param stem The word to lookup
+     * @return The document frequency of the word
+     */
+    public int docFreq(String stem) {
+        int wordId = getIdFromStem(stem);
+        if (wordId == -1) {
+            return 0;
+        }
+        return getDocIdsWithStem(wordId).size();
     }
 
     /**

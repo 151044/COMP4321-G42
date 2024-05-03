@@ -138,4 +138,17 @@ class TableOperationTest {
         assertEquals(4, body.insertStem("societi"));
         assertEquals(3, title.insertStem("superl"));
     }
+
+    @Test
+    void docFreq() {
+        assertEquals(2, body.docFreq("comput"));
+        assertEquals(0, body.docFreq("deconstruction"));
+        assertEquals(1, title.docFreq("comput"));
+    }
+
+    @Test
+    void getDocIdsWithStem() {
+        assertEquals(2, body.getDocIdsWithStem(0).size());
+        assertEquals(1, title.getDocIdsWithStem(0).size());
+    }
 }
