@@ -23,28 +23,18 @@ public class SearchEngine {
     }
 
     /***
-     * Searches for 50 Documents related to query.
+     * Searches for Documents related to query.
      * @param query The entire input query
      * @return List of Document-score pairs sorted by score in non-increasing order
      */
     public List<Tuple<Document, Double>> search(SearchVector query) {
-        return search(query, 50);
-    }
-
-    /***
-     * Searches for Documents related to query.
-     * @param query The entire input query
-     * @param numDocs The number of Documents to search for
-     * @return List of Document-score pairs sorted by score in non-increasing order
-     */
-    public List<Tuple<Document, Double>> search(SearchVector query, int numDocs) {
         return docs.stream()
                 .map(d -> new Tuple<>(d, d.asTitleVector(conn).cosineSim(query) * TITLE_BOOST_FACTOR +
                         d.asBodyVector(conn).cosineSim(query)))
+                .filter(d -> d.right() != 0.0)
                 .sorted(Comparator.<Tuple<Document, Double>, Double>comparing(Tuple::right).reversed())
                 .filter(d -> query.getRequiredTerms().stream()
                         .allMatch(s -> hasPhrase(d.left().bodyFrequencies(), s) || hasPhrase(d.left().titleFrequencies(), s)))
-                .limit(numDocs)
                 .toList();
     }
 
