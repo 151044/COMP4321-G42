@@ -1,11 +1,11 @@
 package hk.ust.comp4321.se;
 
 import hk.ust.comp4321.api.Document;
+import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.util.Tuple;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class SearchEngine {
 
@@ -42,9 +42,33 @@ public class SearchEngine {
                 .map(d -> new Tuple<>(d, d.asTitleVector(conn).cosineSim(query) * TITLE_BOOST_FACTOR +
                         d.asBodyVector(conn).cosineSim(query)))
                 .sorted(Comparator.<Tuple<Document, Double>, Double>comparing(Tuple::right).reversed())
+                .filter(d -> query.getRequiredTerms().stream()
+                        .allMatch(s -> hasPhrase(d.left().bodyFrequencies(), s) || hasPhrase(d.left().titleFrequencies(), s)))
                 .limit(numDocs)
                 .toList();
     }
 
+    private boolean hasPhrase(Map<WordInfo, String> map, List<String> phrase) {
+        if (!phrase.stream().allMatch(map::containsValue)) {
+            return false;
+        }
+        List<Map.Entry<WordInfo, String>> l = map.entrySet().stream().sorted(Map.Entry.comparingByKey()).toList();
+        int curParagraph = 0, phraseIdx = 0;
+        for (Map.Entry<WordInfo, String> entry : l) {
+            if (entry.getKey().paragraph() != curParagraph) {
+                curParagraph = entry.getKey().paragraph();
+                phraseIdx = 0;
+            }
+            if (entry.getValue().equals(phrase.get(phraseIdx))) {
+                phraseIdx++;
+            } else {
+                phraseIdx = 0;
+            }
+            if (phraseIdx == phrase.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
