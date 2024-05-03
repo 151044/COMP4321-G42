@@ -92,7 +92,8 @@ public class DbUtil {
         List<ForwardIndexEntry> forwardEntries = List.of(
                 new ForwardIndexEntry(0, 0, "title"),
                 new ForwardIndexEntry(0, 0, "body"),
-                new ForwardIndexEntry(0, 1, "body")
+                new ForwardIndexEntry(0, 1, "body"),
+                new ForwardIndexEntry(1, 0, "body")
         );
 
         forwardEntries.forEach(e -> create.insertInto(DSL.table("ForwardIndex"))
