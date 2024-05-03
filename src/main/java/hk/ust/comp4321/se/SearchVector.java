@@ -1,7 +1,10 @@
 package hk.ust.comp4321.se;
 
+import hk.ust.comp4321.nlp.NltkPorter;
+
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class representing a vector in the search engine.
@@ -46,8 +49,10 @@ public class SearchVector {
                 prev = -1;
             }
         }
-        requiredTerms.addAll(quotes.stream().map(s -> List.of(s.split(" "))).toList());
+        requiredTerms.addAll(quotes.stream().map(s -> Stream.of(s.split(" "))
+                .map(NltkPorter::stem).toList()).toList());
         List<String> terms = List.of(query.replace("\"", "").split(" "));
+        terms = terms.stream().map(NltkPorter::stem).toList();
         terms.forEach(s -> vector.put(s, 1.0));
     }
 
