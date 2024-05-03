@@ -28,7 +28,7 @@ class SearchVectorTest {
         assertEquals(List.of(), new SearchVector("alpha-beta \"pruning").getRequiredTerms());
         assertEquals(List.of(List.of("alpha-beta", "prun")),
                 new SearchVector("\"alpha-beta pruning\" is a technique").getRequiredTerms());
-        assertEquals(List.of(List.of("pleasur", "form"), List.of("discourse")),
+        assertEquals(List.of(List.of("pleasur", "form"), List.of("discours")),
                 new SearchVector("induces \"pleasure forms\" knowledge produces \"discourse\"").getRequiredTerms());
     }
 }
