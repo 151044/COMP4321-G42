@@ -4,9 +4,7 @@ import hk.ust.comp4321.api.WordInfo;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.jooq.impl.SQLDataType.INTEGER;

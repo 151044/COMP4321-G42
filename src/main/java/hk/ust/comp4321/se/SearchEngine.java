@@ -9,7 +9,7 @@ import java.util.*;
 
 public class SearchEngine {
 
-    private DatabaseConnection conn;
+    private final DatabaseConnection conn;
     private final List<Document> docs;
     private final double TITLE_BOOST_FACTOR = 1.5;
 

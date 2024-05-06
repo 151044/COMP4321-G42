@@ -4,7 +4,6 @@ import hk.ust.comp4321.db.DatabaseConnection;
 import org.jooq.DSLContext;
 import org.jooq.Table;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.*;
@@ -14,12 +13,12 @@ import java.awt.*;
  * A panel for selecting which table to display to the user.
  */
 public class TableSelectorPanel extends JPanel {
-    private GridBagConstraints cons = new GridBagConstraints();
+    private final GridBagConstraints cons = new GridBagConstraints();
     private static final List<String> TYPES = List.of("body", "title");
     private static final List<String> EXCLUDED = List.of("Document", "DocumentLink", "WordIndex", "ForwardIndex");
     private TablePanel tablePanel = null;
-    private JComboBox<String> stemName;
-    private JComboBox<String> tableType = new JComboBox<>(TYPES.toArray(new String[]{}));
+    private final JComboBox<String> stemName;
+    private final JComboBox<String> tableType = new JComboBox<>(TYPES.toArray(new String[]{}));
 
     private static final List<Class<?>> TABLE_TYPES = List.of(Integer.class, Integer.class, Integer.class, Integer.class, String.class);
     private static final List<String> COLUMN_NAMES = List.of("docId", "paragraph", "sentence", "location", "rawWord");
@@ -56,20 +55,18 @@ public class TableSelectorPanel extends JPanel {
         panel.add(new JLabel("Type: "));
         panel.add(tableType);
 
-        tableType.addActionListener(ignored -> {
-            SwingUtilities.invokeLater(() -> {
-                stemName.setEditable(false);
-                stemName.removeAllItems();
-                tables.stream()
-                        .filter(t -> !EXCLUDED.contains(t.getName()))
-                        .map(t -> t.getName().split("_"))
-                        .filter(s -> s[0].equals(tableType.getSelectedItem()))
-                        .map(s -> conn.bodyOperator().getStemFromId(Integer.parseInt(s[1])))
-                        .distinct()
-                        .forEach(stemName::addItem);
-                stemName.setEditable(true);
-            });
-        });
+        tableType.addActionListener(ignored -> SwingUtilities.invokeLater(() -> {
+            stemName.setEditable(false);
+            stemName.removeAllItems();
+            tables.stream()
+                    .filter(t -> !EXCLUDED.contains(t.getName()))
+                    .map(t -> t.getName().split("_"))
+                    .filter(s -> s[0].equals(tableType.getSelectedItem()))
+                    .map(s -> conn.bodyOperator().getStemFromId(Integer.parseInt(s[1])))
+                    .distinct()
+                    .forEach(stemName::addItem);
+            stemName.setEditable(true);
+        }));
 
         JButton submit = new JButton("Submit Query");
         submit.addActionListener(ignored -> {

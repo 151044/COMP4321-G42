@@ -1,10 +1,7 @@
 package hk.ust.comp4321.server;
 
 import hk.ust.comp4321.api.Document;
-import hk.ust.comp4321.api.WordInfo;
 import hk.ust.comp4321.db.DatabaseConnection;
-import hk.ust.comp4321.db.TableOperation;
-import hk.ust.comp4321.nlp.NltkPorter;
 import hk.ust.comp4321.se.SearchEngine;
 import hk.ust.comp4321.se.SearchVector;
 import hk.ust.comp4321.util.Tuple;
@@ -23,7 +20,7 @@ import java.util.stream.Stream;
 
 public class WebServer {
 
-    private static DatabaseConnection conn;
+    private static final DatabaseConnection conn;
 
     static {
         try {
@@ -46,9 +43,7 @@ public class WebServer {
         });
         SearchEngine engine = new SearchEngine(conn, docs);
         Javalin app = Javalin.create()
-                .get("/", ctx -> {
-                    ctx.html(getHomePage());
-                })
+                .get("/", ctx -> ctx.html(getHomePage()))
                 .post("/home", ctx -> {
                     currentPage = getHomePage();
                     ctx.html(currentPage);
