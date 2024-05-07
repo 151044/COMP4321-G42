@@ -50,7 +50,6 @@ public class StopWord {
                 sb.append(" ").append(tokenized.get(i));
             }
         }
-        System.out.println(sb.toString().replace(" \" ", " \"").strip());
         return sb.toString().replace(" \" ", " \"").strip();
     }
 
