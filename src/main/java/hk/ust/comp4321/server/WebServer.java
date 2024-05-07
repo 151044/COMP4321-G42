@@ -30,7 +30,7 @@ public class WebServer {
         }
     }
 
-    private static String currentPage = getHomePage();
+    private static String currentPage = getHomepage();
 
     public static void main(String[] args) throws IOException, SQLException {
         List<Document> docs = conn.getDocuments();
@@ -43,9 +43,9 @@ public class WebServer {
         });
         SearchEngine engine = new SearchEngine(conn, docs);
         Javalin app = Javalin.create()
-                .get("/", ctx -> ctx.html(getHomePage()))
+                .get("/", ctx -> ctx.html(getHomepage()))
                 .post("/home", ctx -> {
-                    currentPage = getHomePage();
+                    currentPage = getHomepage();
                     ctx.html(currentPage);
                 })
                 .post("/homeSearch", ctx -> {
@@ -53,7 +53,7 @@ public class WebServer {
                     String query = ctx.formParam("queryText");
 
                     if (query == null || query.trim().isEmpty()) {
-                        ctx.html(getHomePage());
+                        ctx.html(getHomepage());
                         return;
                     }
 
@@ -191,7 +191,7 @@ public class WebServer {
                """;
     }
 
-    private static String getHomePage() {
+    private static String getHomepage() {
         return """
                 <!DOCTYPE html>
                 <html>
