@@ -118,6 +118,10 @@ public final class Document {
      * @param jsoupDoc The webpage in Jsoup document form
      */
     public void retrieveFromWeb(org.jsoup.nodes.Document jsoupDoc) {
+
+        // Obtain a "cleaner" Jsoup document for body word extractions
+        org.jsoup.nodes.Document cleanJsoupDoc = Jsoup.parse(jsoupDoc.html().replaceAll("<br>|</br>", "\n"));
+
         // Load text processor
         TextProcessor textProcessor = TextProcessor.getInstance();
 
@@ -153,12 +157,16 @@ public final class Document {
             }
         }
 
-        // Extract body sections
-        Elements body = jsoupDoc.select("body");
+        // Extract body sections from the CLEANED version of the Jsoup document
+        Elements body = cleanJsoupDoc.select("body");
 
         // Note: A site can be empty
         if (!body.isEmpty()) {
-            List<String> bodySections = body.get(0).textNodes().stream().map(TextNode::text).toList();
+            List<String> bodySections = Arrays.stream(body.html().split("\n"))
+                                            .map(Jsoup::parse)
+                                            .map(Element::text)
+                                            .toList();
+
             // Paragraph level
             for (int i = 0; i < bodySections.size(); ++i) {
                 List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
@@ -190,7 +198,7 @@ public final class Document {
             try {
                 this.children.add(URI.create(link.attr("abs:href")).toURL());
             } catch (IllegalArgumentException | MalformedURLException ex) {
-//                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
+                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
             }
         }
 
