@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerformancePanel extends JPanel {
-    private JProgressBar bar;
-    private JLabel timeElapsed = new JLabel();
-    private JButton docButton;
+    private final JProgressBar bar;
+    private final JLabel timeElapsed = new JLabel();
+    private final JButton docButton;
     public PerformancePanel(DatabaseConnection conn) {
         int max = DatabaseConnection.nextDocId() - 1; // don't care about the consistency
         bar = new JProgressBar(0, max);
@@ -40,8 +40,8 @@ public class PerformancePanel extends JPanel {
     private class DocumentRetrieval extends SwingWorker<Void, Void> {
         private final DatabaseConnection conn;
         private final int max;
-        private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-        private AtomicInteger seconds = new AtomicInteger();
+        private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+        private final AtomicInteger seconds = new AtomicInteger();
         public DocumentRetrieval(DatabaseConnection conn, int max) {
             this.conn = conn;
             this.max = max;
@@ -50,9 +50,7 @@ public class PerformancePanel extends JPanel {
         protected Void doInBackground() throws Exception {
             exec.scheduleAtFixedRate(() -> {
                 int curSecs = seconds.getAndIncrement();
-                SwingUtilities.invokeLater(() -> {
-                    timeElapsed.setText("Time Elapsed: " + LocalTime.ofSecondOfDay(curSecs).toString());
-                });
+                SwingUtilities.invokeLater(() -> timeElapsed.setText("Time Elapsed: " + LocalTime.ofSecondOfDay(curSecs).toString()));
             }, 0, 1, TimeUnit.SECONDS);
             for (int i = 0; i < max; i++) {
                 Document doc = conn.getDocFromId(i);

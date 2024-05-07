@@ -7,7 +7,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.ValidationException;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;

@@ -315,6 +315,14 @@ public class DatabaseConnection implements AutoCloseable {
     }
 
     /**
+     * Gets the current number of documents.
+     * @return The current number of documents in the database
+     */
+    public static long getDocSize() {
+        return nextDocId.get();
+    }
+
+    /**
      * Gets the next document ID, and increments the next document ID number by one.
      *
      * <p>The next document ID is synchronized across all database connections

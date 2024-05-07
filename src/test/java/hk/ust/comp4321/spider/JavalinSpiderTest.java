@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -55,20 +54,18 @@ public class JavalinSpiderTest {
                 .get("/", ctx -> ctx.redirect("/home"))
                 .get("/home", ctx -> ctx.redirect("/home/ust_student"))
                 .get("/home/ust_student", ctx -> ctx.redirect("/home/cse"))
-                .get("/home/cse", ctx -> {
-                    ctx.html("""
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>Home Webpage of CSE; Home Webpage of HKUST CSE.</title>
-                            </head>
-                            
-                            <body>
-                            This is the home page of HKUST CSE.
-                            <a href=../../>Go Home!</a>
-                            </body>
-                            """);
-                }).start();
+                .get("/home/cse", ctx -> ctx.html("""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Home Webpage of CSE; Home Webpage of HKUST CSE.</title>
+                        </head>
+                        
+                        <body>
+                        This is the home page of HKUST CSE.
+                        <a href=../../>Go Home!</a>
+                        </body>
+                        """)).start();
         Spider spider = new Spider(URI.create("http://localhost:" + app.port() + "/").toURL(), conn);
         spider.discover(3000);
         Document doc = conn.getDocFromId(0);
@@ -83,20 +80,18 @@ public class JavalinSpiderTest {
                 .get("/", ctx -> ctx.redirect("/home"))
                 .get("/home", ctx -> ctx.redirect("/home/ust_student"))
                 .get("/home/ust_student", ctx -> ctx.redirect("/home/cse"))
-                .get("/home/cse", ctx -> {
-                    ctx.html("""
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>Home Webpage of CSE; Home Webpage of HKUST CSE.</title>
-                            </head>
-                            
-                            <body>
-                            This is the home page of HKUST CSE.
-                            <a href=/home/rabbit_hole>Go Home!</a>
-                            </body>
-                            """);
-                });
+                .get("/home/cse", ctx -> ctx.html("""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Home Webpage of CSE; Home Webpage of HKUST CSE.</title>
+                        </head>
+                        
+                        <body>
+                        This is the home page of HKUST CSE.
+                        <a href=/home/rabbit_hole>Go Home!</a>
+                        </body>
+                        """));
         app = app.get("/home/rabbit_hole", ctx -> ctx.redirect("/home/rabbit_hole_0"));
         for (int i = 0; i < jumps; i++) {
             int finalI = i;
