@@ -181,15 +181,15 @@ public class DocumentTest {
     void asBodyVector() throws SQLException {
         Document doc = conn.getDocFromId(1);
         doc.retrieveFromDatabase(conn);
-        assertTrue(doc.asBodyVector(conn).cosineSim(new SearchVector("comput")) > 0);
-        assertEquals(0, doc.asBodyVector(conn).cosineSim(new SearchVector("locat")));
+        assertTrue(doc.asBodyVector(conn.getDocuments()).cosineSim(new SearchVector("comput")) > 0);
+        assertEquals(0, doc.asBodyVector(conn.getDocuments()).cosineSim(new SearchVector("locat")));
     }
 
     @Test
     void asTitleVector() throws SQLException {
         Document doc = conn.getDocFromId(0);
         doc.retrieveFromDatabase(conn);
-        assertEquals(0, doc.asTitleVector(conn).cosineSim(new SearchVector("locat")));
-        assertTrue(doc.asTitleVector(conn).cosineSim(new SearchVector("comput")) > 0);
+        assertEquals(0, doc.asTitleVector(conn.getDocuments()).cosineSim(new SearchVector("locat")));
+        assertTrue(doc.asTitleVector(conn.getDocuments()).cosineSim(new SearchVector("comput")) > 0);
     }
 }

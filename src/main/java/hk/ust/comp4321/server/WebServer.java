@@ -4,6 +4,7 @@ import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.db.DatabaseConnection;
 import hk.ust.comp4321.se.SearchEngine;
 import hk.ust.comp4321.se.SearchVector;
+import hk.ust.comp4321.util.DocumentLoadTask;
 import hk.ust.comp4321.util.Tuple;
 import io.javalin.Javalin;
 
@@ -15,6 +16,8 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,19 +34,32 @@ public class WebServer {
     }
 
     private static String currentPage = getHomePage();
+    private static AtomicBoolean loaded = new AtomicBoolean(false);
 
     public static void main(String[] args) throws IOException, SQLException {
         List<Document> docs = conn.getDocuments();
-        docs.forEach(d -> {
+        ForkJoinPool pool = new ForkJoinPool();
+        long startTemp = System.currentTimeMillis();
+
+        DocumentLoadTask retrieveTask = new DocumentLoadTask(docs, d -> {
             try {
                 d.retrieveFromDatabase(conn);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
+        pool.execute(retrieveTask);
+        retrieveTask.join();
+        System.out.println(System.currentTimeMillis() - startTemp);
         SearchEngine engine = new SearchEngine(conn, docs);
         Javalin app = Javalin.create()
-                .get("/", ctx -> ctx.html(getHomePage()))
+                .get("/", ctx -> {
+                    if (loaded.get()) {
+                        ctx.html(getHomePage());
+                    } else {
+                        ctx.html("Our web server is pre-loading!");
+                    }
+                })
                 .post("/home", ctx -> {
                     currentPage = getHomePage();
                     ctx.html(currentPage);
@@ -75,8 +91,6 @@ public class WebServer {
 
                     SearchVector vectorQuery = new SearchVector(query);
                     List<Tuple<Document, Double>> search = engine.search(vectorQuery);
-                    System.out.println(query);
-                    System.out.println(search);
 
                     long end = System.currentTimeMillis();
                     currentPage = getSearchPage(query, search.size(), (double)(end - start) / 1000, search);
@@ -88,6 +102,15 @@ public class WebServer {
             app.stop();
         });
         app.start();
+        startTemp = System.currentTimeMillis();
+        DocumentLoadTask task = new DocumentLoadTask(docs, d -> {
+            d.asBodyVector(docs);
+            d.asTitleVector(docs);
+        });
+        pool.execute(task);
+        task.join();
+        System.out.println(System.currentTimeMillis() - startTemp);
+        loaded.set(true);
     }
 
     private static String getErrorPage(String query) {
