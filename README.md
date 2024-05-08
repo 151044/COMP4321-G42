@@ -93,7 +93,7 @@ The runnable application JAR can be found under `build/libs`.
 
 If double-clicking on the JAR does not bring up anything, your Java environment may be misconfigured. Try to run it from the command line in the `build/libs` directory:
 ```
-java -jar COMP4321-G42-Spider-1.0.jar
+java -jar COMP4321-G42-Web-Server-1.0.jar
 ```
 
 The search engine is hosted at port 8080. To access it, navigate to http://localhost:8080.
