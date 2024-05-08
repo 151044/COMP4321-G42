@@ -44,19 +44,6 @@ public class WebServer {
 
     public static void main(String[] args) throws IOException, SQLException {
         List<Document> docs = conn.getDocuments();
-        ForkJoinPool pool = new ForkJoinPool();
-        long startTemp = System.currentTimeMillis();
-
-        DocumentLoadTask retrieveTask = new DocumentLoadTask(docs, d -> {
-            try {
-                d.retrieveFromDatabase(conn);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        pool.execute(retrieveTask);
-        retrieveTask.join();
-        System.out.println(System.currentTimeMillis() - startTemp);
         SearchEngine engine = new SearchEngine(conn, docs);
         Javalin app = Javalin.create()
                 .get("/", ctx -> {
@@ -115,6 +102,19 @@ public class WebServer {
             app.stop();
         });
         app.start();
+        ForkJoinPool pool = new ForkJoinPool();
+        long startTemp = System.currentTimeMillis();
+
+        DocumentLoadTask retrieveTask = new DocumentLoadTask(docs, d -> {
+            try {
+                d.retrieveFromDatabase(conn);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        pool.execute(retrieveTask);
+        retrieveTask.join();
+        System.out.println(System.currentTimeMillis() - startTemp);
         startTemp = System.currentTimeMillis();
         DocumentLoadTask task = new DocumentLoadTask(docs, d -> {
             d.asBodyVector(docs);
