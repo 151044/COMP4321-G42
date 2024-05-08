@@ -2,6 +2,7 @@ package hk.ust.comp4321.server;
 
 import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.db.DatabaseConnection;
+import hk.ust.comp4321.nlp.NltkPorter;
 import hk.ust.comp4321.se.SearchEngine;
 import hk.ust.comp4321.se.SearchVector;
 import hk.ust.comp4321.util.DocumentLoadTask;
@@ -426,7 +427,7 @@ public class WebServer {
                         .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
         String keyWords = frequencies.entrySet().stream().sorted(
                                     Map.Entry.<String, Long>comparingByValue().reversed())
-                                    .limit(10).map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining("; "));
+                                    .limit(10).map(e -> NltkPorter.stem(e.getKey())  + " " + e.getValue()).limit(5).collect(Collectors.joining("; "));
         String parentLinks = conn.parents(doc.id()).stream()
                                                     .map(x -> x.url().toString())
                                                     .map(x -> "<div class=\"searchResultPageLink\"><a href=\"%s\">%s</a></div>".formatted(x,x))
