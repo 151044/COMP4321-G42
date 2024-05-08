@@ -50,7 +50,7 @@ public class WebServer {
                     if (loaded.get()) {
                         ctx.html(getHomepage());
                     } else {
-                        ctx.html(LoadingPage.getLoadingPage(docs.size()));
+                        ctx.html(LoadingPage.getLoadingPage(docs.size() * 2));
                     }
                 })
                 .post("/home", ctx -> {
@@ -102,12 +102,25 @@ public class WebServer {
             app.stop();
         });
         app.start();
+        new Thread(() -> {
+            while (!loaded.get()) {
+                contexts.forEach(ctx -> ctx.send(progress.get()));
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            contexts.forEach(ctx -> ctx.send("redirect"));
+            contexts.forEach(WsContext::closeSession);
+        }).start();
         ForkJoinPool pool = new ForkJoinPool();
         long startTemp = System.currentTimeMillis();
 
         DocumentLoadTask retrieveTask = new DocumentLoadTask(docs, d -> {
             try {
                 d.retrieveFromDatabase(conn);
+                progress.incrementAndGet();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -122,13 +135,6 @@ public class WebServer {
             progress.incrementAndGet();
         });
         pool.execute(task);
-        new Thread(() -> {
-            while (!loaded.get()) {
-                contexts.forEach(ctx -> ctx.send(progress.get()));
-            }
-            contexts.forEach(ctx -> ctx.send("redirect"));
-            contexts.forEach(WsContext::closeSession);
-        }).start();
         task.join();
         System.out.println(System.currentTimeMillis() - startTemp);
         loaded.set(true);
