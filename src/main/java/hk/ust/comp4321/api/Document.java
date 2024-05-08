@@ -6,6 +6,7 @@ import hk.ust.comp4321.nlp.*;
 import hk.ust.comp4321.se.SearchVector;
 import hk.ust.comp4321.util.StopWord;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
 
@@ -36,6 +37,8 @@ public final class Document {
     private final List<URL> children = new ArrayList<>();
     private boolean isLoaded = false;
     private String title = "";
+    private SearchVector titleVector;
+    private SearchVector bodyVector;
 
     /**
      * Creates a new Document with the specified URL.
@@ -115,6 +118,10 @@ public final class Document {
      * @param jsoupDoc The webpage in Jsoup document form
      */
     public void retrieveFromWeb(org.jsoup.nodes.Document jsoupDoc) {
+
+        // Obtain a "cleaner" Jsoup document for body word extractions
+        org.jsoup.nodes.Document cleanJsoupDoc = Jsoup.parse(jsoupDoc.html().replaceAll("<br>|</br>", "\n"));
+
         // Load text processor
         TextProcessor textProcessor = TextProcessor.getInstance();
 
@@ -150,12 +157,16 @@ public final class Document {
             }
         }
 
-        // Extract body sections
-        Elements body = jsoupDoc.select("body");
+        // Extract body sections from the CLEANED version of the Jsoup document
+        Elements body = cleanJsoupDoc.select("body");
 
         // Note: A site can be empty
         if (!body.isEmpty()) {
-            List<String> bodySections = body.get(0).children().stream().map(Element::text).toList();
+            List<String> bodySections = Arrays.stream(body.html().split("\n"))
+                                            .map(Jsoup::parse)
+                                            .map(Element::text)
+                                            .toList();
+
             // Paragraph level
             for (int i = 0; i < bodySections.size(); ++i) {
                 List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
@@ -187,7 +198,7 @@ public final class Document {
             try {
                 this.children.add(URI.create(link.attr("abs:href")).toURL());
             } catch (IllegalArgumentException | MalformedURLException ex) {
-//                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
+                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
             }
         }
 
@@ -214,87 +225,7 @@ public final class Document {
             return;
         }
 
-        // Request execution successful. Execute the request as a GET and parse the result
-        org.jsoup.nodes.Document doc = docConnection.get();
-
-        // Load text processor
-        TextProcessor textProcessor = TextProcessor.getInstance();
-
-        // Extract title sections
-        // Note: There must be exactly one title per HTMl file (i.e., one "paragraph" only)
-        title = doc.select("title").text();
-        List<String> titleSentences = textProcessor.toSentence(title);
-        // Sentence level
-        for (int j = 0; j < titleSentences.size(); ++j) {
-            /*
-            For every sentence:
-            1. Tokenize the sentence
-            2. Filter out tokens that are all symbols
-            3. Turn all the tokens into lowercase
-             */
-            List<String> rawTitleWords = textProcessor.toTokens(titleSentences.get(j))
-                    .stream()
-                    .filter(text -> !TextProcessor.isAllSymbols(text))
-                    .map(String::toLowerCase).toList();
-            // Word level
-            for (int k = 0; k < rawTitleWords.size(); ++k) {
-                String rawWord = rawTitleWords.get(k);
-                // Put the stem to the map if it is not a stop word
-                if (!StopWord.isStopWord(rawWord)) {
-                    String stemmedWord = NltkPorter.stem(rawWord);
-                    // Store empty string is the stemmed word is identical to the raw word
-                    if (stemmedWord.equals(rawWord)) {
-                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, ""), stemmedWord);
-                    } else {
-                        this.titleFrequencies.put(new WordInfo(this.id, 0, j, k, rawWord), stemmedWord);
-                    }
-                }
-            }
-        }
-
-        // Extract body sections
-        Elements body = doc.select("body");
-
-        // Note: A site can be empty
-        if (!body.isEmpty()) {
-            List<String> bodySections = body.get(0).children().stream().map(Element::text).toList();
-            // Paragraph level
-            for (int i = 0; i < bodySections.size(); ++i) {
-                List<String> bodySentences = textProcessor.toSentence(bodySections.get(i));
-                // Sentence level
-                for (int j = 0; j < bodySentences.size(); ++j) {
-                    List<String> rawBodyWords = textProcessor.toTokens(bodySentences.get(j))
-                            .stream()
-                            .filter(text -> !TextProcessor.isAllSymbols(text))
-                            .map(String::toLowerCase).toList();
-                    // Word level
-                    for (int k = 0; k < rawBodyWords.size(); ++k) {
-                        String rawWord = rawBodyWords.get(k);
-                        if (!StopWord.isStopWord(rawWord)) {
-                            String stemmedWord = NltkPorter.stem(rawWord);
-                            if (stemmedWord.equals(rawWord)) {
-                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, ""), stemmedWord);
-                            } else {
-                                this.bodyFrequencies.put(new WordInfo(this.id, i, j, k, rawWord), stemmedWord);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Extract links
-        Elements links = doc.select("a[href]");
-        for (Element link : links) {
-            try {
-                this.children.add(URI.create(link.attr("abs:href")).toURL());
-            } catch (IllegalArgumentException | MalformedURLException ex) {
-//                System.out.println("Error occurred when crawling this page: " + link.attr("abs:href") + " and hence skipped");
-            }
-        }
-
-        // Document is completely loaded
-        isLoaded = true;
+        retrieveFromWeb(docConnection.get());
     }
 
     /**
@@ -412,24 +343,30 @@ public final class Document {
     }
 
     /**
-     * Converts the title s of this document into a search query.
-     * @param conn The database connection to look up this document in
+     * Converts the titles of this document into a search query.
+     * @param documents The list of all documents
      * @return The search vector corresponding to the titles in this document
      */
-    public SearchVector asTitleVector(DatabaseConnection conn) {
-        return termWeights(titleFrequencies, conn.titleOperator());
+    public SearchVector asTitleVector(List<Document> documents) {
+        if (titleVector == null) {
+            titleVector = termWeights(titleFrequencies, documents, d -> d.titleFrequencies);
+        }
+        return titleVector;
     }
 
     /**
      * Converts the body of this document into a search query.
-     * @param conn The database connection to look up this document in
+     * @param documents The list of all documents
      * @return The search vector corresponding to the body in this document
      */
-    public SearchVector asBodyVector(DatabaseConnection conn) {
-        return termWeights(bodyFrequencies, conn.bodyOperator());
+    public SearchVector asBodyVector(List<Document> documents) {
+        if (bodyVector == null) {
+            bodyVector = termWeights(bodyFrequencies, documents, d -> d.bodyFrequencies);
+        }
+        return bodyVector;
     }
 
-    private SearchVector termWeights(Map<WordInfo, String> info, TableOperation op) {
+    private SearchVector termWeights(Map<WordInfo, String> info, List<Document> docs, Function<Document, Map<WordInfo, String>> converter) {
         Map<String, Long> values = info.values().stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         long maxTerm = values.values().stream().max(Long::compare).orElse(0L);
@@ -439,7 +376,8 @@ public final class Document {
         List<Map.Entry<String, Long>> l = values.entrySet().stream().toList();
         return new SearchVector(l.stream().map(Map.Entry::getKey).toList(),
                 l.stream().map(e -> e.getValue() * (Math.log((double) DatabaseConnection.getDocSize() /
-                        op.docFreq(e.getKey())) / Math.log(2)) / maxTerm).toList());
+                        docs.parallelStream().map(converter)
+                                .filter(m -> m.containsValue(e.getKey())).count()) / Math.log(2)) / maxTerm).toList());
     }
 
     @Override

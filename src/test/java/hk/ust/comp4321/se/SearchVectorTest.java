@@ -10,14 +10,14 @@ class SearchVectorTest {
 
     @Test
     void cosineSim() {
-        SearchVector doc = new SearchVector(List.of("rage", "against", "dying", "light"), List.of(0.2, 0.1, 0.1, 0.1));
+        SearchVector doc = new SearchVector(List.of("rage", "dying", "light"), List.of(0.2, 0.1, 0.1));
         assertEquals(0, doc.cosineSim(new SearchVector("alpha-beta pruning is a technique")));
         assertNotEquals(0, doc.cosineSim(new SearchVector("dying light")));
         assertNotEquals(0, doc.cosineSim(new SearchVector("dying of the light")));
         assertEquals(doc.cosineSim(new SearchVector("dying light eye universe")),
-                doc.cosineSim(new SearchVector("dying of the light")));
+                doc.cosineSim(new SearchVector("gentle night dying of the light")));
         assertTrue(doc.cosineSim(new SearchVector("dying light")) >
-                doc.cosineSim(new SearchVector("dying of the light")));
+                doc.cosineSim(new SearchVector("burn rave dying of the light")));
         assertTrue(doc.cosineSim(new SearchVector("dying light")) >
                 doc.cosineSim(new SearchVector("dying")));
     }

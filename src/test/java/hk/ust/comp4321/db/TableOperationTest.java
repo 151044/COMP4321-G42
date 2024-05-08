@@ -143,12 +143,12 @@ class TableOperationTest {
     void docFreq() {
         assertEquals(2, body.docFreq("comput"));
         assertEquals(0, body.docFreq("deconstruction"));
-        assertEquals(1, title.docFreq("comput"));
+        assertEquals(2, title.docFreq("comput"));
     }
 
     @Test
     void getDocIdsWithStem() {
         assertEquals(2, body.getDocIdsWithStem(0).size());
-        assertEquals(1, title.getDocIdsWithStem(0).size());
+        assertEquals(2, title.getDocIdsWithStem(0).size());
     }
 }

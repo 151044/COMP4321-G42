@@ -1,6 +1,7 @@
 package hk.ust.comp4321.se;
 
 import hk.ust.comp4321.nlp.NltkPorter;
+import hk.ust.comp4321.util.StopWord;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class SearchVector {
      * @param query The raw query string; May contain quotes
      */
     public SearchVector(String query) {
+        query = StopWord.stripStopwords(query);
         String slice = query;
         List<String> quotes = new ArrayList<>();
         int i;
@@ -84,6 +86,7 @@ public class SearchVector {
 
     @Override
     public String toString() {
-        return vector.entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(", "));
+        return "[" + vector.entrySet().stream()
+                .map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(", ")) + ", " + requiredTerms + "]";
     }
 }

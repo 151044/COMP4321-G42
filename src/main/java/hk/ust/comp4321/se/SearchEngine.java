@@ -29,8 +29,8 @@ public class SearchEngine {
      */
     public List<Tuple<Document, Double>> search(SearchVector query) {
         return docs.stream()
-                .map(d -> new Tuple<>(d, d.asTitleVector(conn).cosineSim(query) * TITLE_BOOST_FACTOR +
-                        d.asBodyVector(conn).cosineSim(query)))
+                .map(d -> new Tuple<>(d, d.asTitleVector(docs).cosineSim(query) * TITLE_BOOST_FACTOR +
+                        d.asBodyVector(docs).cosineSim(query)))
                 .filter(d -> d.right() != 0.0)
                 .sorted(Comparator.<Tuple<Document, Double>, Double>comparing(Tuple::right).reversed())
                 .filter(d -> query.getRequiredTerms().stream()

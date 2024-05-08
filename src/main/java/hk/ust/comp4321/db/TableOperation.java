@@ -1,5 +1,6 @@
 package hk.ust.comp4321.db;
 
+import hk.ust.comp4321.api.Document;
 import hk.ust.comp4321.api.WordInfo;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -233,9 +234,8 @@ public abstract class TableOperation {
      * @return The list of all unique document IDs matching this stem
      */
     public List<Integer> getDocIdsWithStem(int stemId) {
-        return create.select(DSL.field(DSL.name("docId"))).from(DSL.table(DSL.name("ForwardIndex"))).where(
-                DSL.condition(DSL.field(DSL.name("wordId")).eq(stemId))
-                        .and(DSL.field(DSL.name("typePrefix")).eq(getPrefix())))
+        return create.select(DSL.field(DSL.name("docId")))
+                .from(DSL.table(DSL.name(getPrefix(stemId))))
                 .fetch()
                 .stream()
                 .map(r -> r.get(0, Integer.class))
