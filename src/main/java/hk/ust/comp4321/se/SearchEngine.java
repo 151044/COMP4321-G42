@@ -35,6 +35,7 @@ public class SearchEngine {
                 .sorted(Comparator.<Tuple<Document, Double>, Double>comparing(Tuple::right).reversed())
                 .filter(d -> query.getRequiredTerms().stream()
                         .allMatch(s -> hasPhrase(d.left().bodyFrequencies(), s) || hasPhrase(d.left().titleFrequencies(), s)))
+                .limit(50)
                 .toList();
     }
 
