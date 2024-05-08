@@ -8,6 +8,7 @@ import hk.ust.comp4321.se.SearchVector;
 import hk.ust.comp4321.util.DocumentLoadTask;
 import hk.ust.comp4321.util.Tuple;
 import io.javalin.Javalin;
+import io.javalin.websocket.WsContext;
 
 import java.io.IOException;
 import java.net.URL;
@@ -15,10 +16,12 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +39,8 @@ public class WebServer {
 
     private static String currentPage = getHomepage();
     private static AtomicBoolean loaded = new AtomicBoolean(false);
+    private static AtomicInteger progress = new AtomicInteger(0);
+    private static List<WsContext> contexts = new ArrayList<>();
 
     public static void main(String[] args) throws IOException, SQLException {
         List<Document> docs = conn.getDocuments();
@@ -58,7 +63,7 @@ public class WebServer {
                     if (loaded.get()) {
                         ctx.html(getHomepage());
                     } else {
-                        ctx.html("Our web server is pre-loading!");
+                        ctx.html(LoadingPage.getLoadingPage(docs.size()));
                     }
                 })
                 .post("/home", ctx -> {
@@ -99,6 +104,10 @@ public class WebServer {
                 })
                 .error(404, ctx -> {
                     ctx.html(getErrorPage());
+                })
+                .ws("/progress", ws -> {
+                    ws.onConnect(ctx -> contexts.add(ctx));
+                    ws.onClose(ctx -> contexts.removeIf(c -> c.sessionId().equals(ctx.sessionId())));
                 });
         app.get("/shutdown", ctx -> {
             ctx.html("Shutting down...");
@@ -110,8 +119,16 @@ public class WebServer {
         DocumentLoadTask task = new DocumentLoadTask(docs, d -> {
             d.asBodyVector(docs);
             d.asTitleVector(docs);
+            progress.incrementAndGet();
         });
         pool.execute(task);
+        new Thread(() -> {
+            while (!loaded.get()) {
+                contexts.forEach(ctx -> ctx.send(progress.get()));
+            }
+            contexts.forEach(ctx -> ctx.send("redirect"));
+            contexts.forEach(WsContext::closeSession);
+        }).start();
         task.join();
         System.out.println(System.currentTimeMillis() - startTemp);
         loaded.set(true);
