@@ -33,7 +33,7 @@ public class WebServer {
         }
     }
 
-    private static String currentPage = getHomePage();
+    private static String currentPage = getHomepage();
     private static AtomicBoolean loaded = new AtomicBoolean(false);
 
     public static void main(String[] args) throws IOException, SQLException {
@@ -55,13 +55,13 @@ public class WebServer {
         Javalin app = Javalin.create()
                 .get("/", ctx -> {
                     if (loaded.get()) {
-                        ctx.html(getHomePage());
+                        ctx.html(getHomepage());
                     } else {
                         ctx.html("Our web server is pre-loading!");
                     }
                 })
                 .post("/home", ctx -> {
-                    currentPage = getHomePage();
+                    currentPage = getHomepage();
                     ctx.html(currentPage);
                 })
                 .post("/homeSearch", ctx -> {
@@ -69,7 +69,7 @@ public class WebServer {
                     String query = ctx.formParam("queryText");
 
                     if (query == null || query.trim().isEmpty()) {
-                        ctx.html(getHomePage());
+                        ctx.html(getHomepage());
                         return;
                     }
 
@@ -95,6 +95,9 @@ public class WebServer {
                     long end = System.currentTimeMillis();
                     currentPage = getSearchPage(query, search.size(), (double)(end - start) / 1000, search);
                     ctx.html(currentPage);
+                })
+                .error(404, ctx -> {
+                    ctx.html(getErrorPage());
                 });
         app.get("/shutdown", ctx -> {
             ctx.html("Shutting down...");
@@ -113,24 +116,25 @@ public class WebServer {
         loaded.set(true);
     }
 
-    private static String getErrorPage(String query) {
+    private static String getErrorPage() {
         return """
                 <!DOCTYPE html>
                 <html>
-                %s
+                <head>
+                    <title>Error 404 - COMP 4321 Group 42 Search Engine</title>
+                </head>
                 %s
                 <body>
                 %s
-                %s
-                <div style="padding: 10px;">The term "%s" does not exist.</div>
+                <div style="padding: 10px;">Error! Page not found.</div>
                 </body>
-                """.formatted(getSearchpageTitle(query), getSearchpageStyle(), getSearchpageHeader(), getSearchResultTitle(query), query);
+                """.formatted(getSearchpageStyle(), getSearchpageHeader());
     }
 
     private static String getHomepageTitle() {
         return """
                 <head>
-                    <title>COMP4321 Group 42 Search Engine</title>
+                    <title>COMP 4321 Group 42 Search Engine</title>
                 </head>
                """;
     }
@@ -210,14 +214,14 @@ public class WebServer {
                """;
     }
 
-    private static String getHomePage() {
+    private static String getHomepage() {
         return """
                 <!DOCTYPE html>
                 <html>
                 %s
                 %s
                 <body>
-                <h1 class="title">Search Engine</h1>
+                <h1 class="title">COMP 4321 Search Engine</h1>
                 <form id="homeSearchForm", action="/homeSearch" method="POST">
                     <div class="input-container">
                         <label for="queryText"></label>
@@ -234,7 +238,7 @@ public class WebServer {
     private static String getSearchpageTitle(String query) {
         return """
                 <head>
-                    <title> %s - Group 42 Search Engine</title>
+                    <title> %s - COMP 4321 Group 42 Search Engine</title>
                 </head>
                """.formatted(query);
     }
@@ -363,6 +367,13 @@ public class WebServer {
                     font-weight: normal;
                     text-align: left;
                 }
+                .searchResultPageTitle,
+                .searchResultPageLink,
+                .searchResultPageInfo,
+                .searchResultPageWordFreq,
+                .searchResultItemText {
+                    padding-left: 10px;
+                }
                 </style>
               """;
     }
@@ -394,7 +405,7 @@ public class WebServer {
 
     private static String getSearchResultTitle(String query) {
         return """
-               <div class="searchResultTitle">Search results for "%s"</div>
+               <div class="searchResultTitle">Search results for <span style="font-style:italic">%s</span></div>
                """.formatted(query);
     }
 
