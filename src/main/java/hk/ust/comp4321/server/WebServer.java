@@ -90,7 +90,7 @@ public class WebServer {
                     ctx.html(currentPage);
                 })
                 .error(404, ctx -> {
-                    ctx.html(getErrorPage());
+                    ctx.html(getErrorPage(loaded.get()));
                 })
                 .ws("/progress", ws -> {
                     ws.onConnect(ctx -> contexts.add(ctx));
@@ -140,19 +140,19 @@ public class WebServer {
         loaded.set(true);
     }
 
-    private static String getErrorPage() {
+    private static String getErrorPage(boolean isLoaded) {
         return """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Error 404 - COMP 4321 Group 42 Search Engine</title>
-                </head>
-                %s
-                <body>
-                %s
-                <div style="padding: 10px;">Error! Page not found.</div>
-                </body>
-                """.formatted(getSearchpageStyle(), getSearchpageHeader());
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Error 404 - COMP 4321 Group 42 Search Engine</title>
+            </head>
+            %s
+            <body>
+            %s
+            <div style="padding: 10px;">Error! Page not found.</div>
+            </body>
+            """.formatted(getSearchpageStyle(), isLoaded ? getSearchpageHeader() : "");
     }
 
     private static String getHomepageTitle() {
