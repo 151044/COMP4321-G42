@@ -427,7 +427,7 @@ public class WebServer {
                         .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
         String keyWords = frequencies.entrySet().stream().sorted(
                                     Map.Entry.<String, Long>comparingByValue().reversed())
-                                    .limit(10).map(e -> NltkPorter.stem(e.getKey())  + " " + e.getValue()).limit(5).collect(Collectors.joining("; "));
+                                    .limit(5).map(e -> NltkPorter.stem(e.getKey())  + " " + e.getValue()).collect(Collectors.joining("; "));
         String parentLinks = conn.parents(doc.id()).stream()
                                                     .map(x -> x.url().toString())
                                                     .map(x -> "<div class=\"searchResultPageLink\"><a href=\"%s\">%s</a></div>".formatted(x,x))
