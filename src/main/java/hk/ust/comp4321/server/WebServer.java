@@ -115,7 +115,6 @@ public class WebServer {
             contexts.forEach(WsContext::closeSession);
         }).start();
         ForkJoinPool pool = new ForkJoinPool();
-        long startTemp = System.currentTimeMillis();
 
         DocumentLoadTask retrieveTask = new DocumentLoadTask(docs, d -> {
             try {
@@ -127,8 +126,6 @@ public class WebServer {
         });
         pool.execute(retrieveTask);
         retrieveTask.join();
-        System.out.println(System.currentTimeMillis() - startTemp);
-        startTemp = System.currentTimeMillis();
         DocumentLoadTask task = new DocumentLoadTask(docs, d -> {
             d.asBodyVector(docs);
             d.asTitleVector(docs);
@@ -136,7 +133,6 @@ public class WebServer {
         });
         pool.execute(task);
         task.join();
-        System.out.println(System.currentTimeMillis() - startTemp);
         loaded.set(true);
     }
 
